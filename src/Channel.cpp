@@ -63,6 +63,14 @@ void Channel::removeMember(Client& client)
 			break;
 		}
 	}
+	for (std::vector<Client*>::iterator it = operators.begin(); it != operators.end(); ++it)
+	{
+		if ((*it)->getNickname() == client.getNickname())
+		{
+			operators.erase(it);
+			break;
+		}
+	}
 }
 
 void Channel::setTopic(std::string topic)

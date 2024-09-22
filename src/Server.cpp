@@ -282,17 +282,17 @@ std::vector<std::string> Server::parseCommand(std::string command)
 		if (space_pos == std::string::npos)
 			space_pos = command.size();
 		command_part = command.substr(0, space_pos);
-		if (command_part[0] == ':')
-		{
-			command.erase(0, 1);
-			command_parts.push_back(command);
-			break;
-		}
-		else
-		{
+		//if (command_part[0] == ':')
+		//{
+		//	command.erase(0, 1);
+		//	command_parts.push_back(command);
+		//	break;
+		//}
+		//else
+		//{
 			command.erase(0, space_pos + 1);
 			command_parts.push_back(command_part);
-		}
+		//}
 	}
 	return command_parts;
 }

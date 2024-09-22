@@ -1,50 +1,85 @@
 #include "Commands/Kick.hpp"
 #include "Server.hpp"
+#include <iostream>
 
 Commands::Kick::Kick(std::vector<std::string> command_parts)
 {
-	if (command_parts.size() < 3 || command_parts.size() > 4)
-		throw ;
+	this->error = false;
 
+    if (command_parts.size() < 3)
+    {
+        this->error = true;
+        this->errorMessage = "999 KICK :Invalid number of parameters.";
+        return;
+    }
+	
 	this->channelName = command_parts[1];
-	this->nickname = command_parts[2];
+    this->nickname = command_parts[2];
 
-	if (command_parts.size() == 4)
-		this->reason = command_parts[3];
+    if (command_parts.size() >= 4)
+    {
+        if (command_parts[3][0] == ':')
+        {
+         	this->reason = command_parts[3].substr(1);
+            for (size_t i = 4; i < command_parts.size(); ++i)
+                this->reason += " " + command_parts[i];
+        }
+        else
+        {
+            this->error = true;
+            this->errorMessage = "999 KICK :Invalid number of parameters.";
+            return;
+    	}
+	}
 }
 
 void Commands::Kick::execute(Client& client, Server& server)
 {
+	if (this->error)
+	{
+		client.sendBack(this->errorMessage, "client");
+		return;
+	}
+
 	// recuperer le channel depuis le server
 	Channel* channel = server.getChannel(channelName);
 
 	if (!channel)
 	{
-		client.sendMessage("Channel : " + this->channelName + " does not exist");
+		client.sendBack("403 " + this->channelName + " :No such channel", "client");
 		return;
 	}
 
-	// a faire : check des droit pour pouvoir le faire
-	// pour l'instant tout le monde peux kick tout le monde
+	if (!channel->isMember(client))
+	{
+		client.sendBack("442 " + client.getNickname() + " " + channel->getChannelName() + " :You're not on that channel", "client");
+		return;
+	}
+
+	if (!channel->isOperator(client))
+	{
+		client.sendBack("482 " + channel->getChannelName() + " :You're not channel operator", "client");
+		return;
+	}
 
 	// recuperer le nom du mec aupres du server
 	Client* target = server.getClientByNickname(this->nickname);
 
-	// check si la personne existe et est dans le channel
-	if (!target || !channel->isMember(*target))
+	if (!target)
 	{
-		client.sendMessage("User : " + this->nickname + " is not in the channel");
+		client.sendBack("401 " + client.getNickname() + " " + this->nickname + " :No such nick/channel", "client");
 		return;
 	}
 
-	// check si la personne est operateur du channel pour avoir le droit de kick la personne
-	if (channel->isOperator(client))
-		channel->removeMember(*target);
-
-	// envois le message a tout les membres du channel que la personne a ete kick
-	std::vector<Client*> members = channel->getMembers();
-	for (std::vector<Client*>::iterator it = members.begin(); it != members.end(); ++it)
+	// check si la personne est dans le channel
+	if (!channel->isMember(*target))
 	{
-		(*it)->sendBack("KICK " + channel->getChannelName() + " " + target->getNickname() + " :" + this->reason);
+		client.sendBack("441 " + client.getNickname() + " " + this->nickname + " " + this->channelName + " :They aren't on that channel", "client");
+		return;
 	}
+
+	channel->removeMember(*target);
+
+	target->sendBack("KICK " + this->channelName + " " + this->nickname + " :" + this->reason, "client");
+	channel->sendBack("KICK " + this->channelName + " " + this->nickname + " :" + this->reason);
 }
