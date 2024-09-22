@@ -9,16 +9,19 @@ namespace Commands
 {
 	class Mode : public Command
 	{
-	public:
-		Mode(std::vector<std::string> command_parts);
-		virtual void execute(Client& client, Server& server);
+		public:
 
-	protected:
-		std::string channelName;
-		std::string mode;
-		std::string extraParam;
-		bool 		error;
-		std::string errorMessage;
+			Mode(std::vector<std::string> command_parts);
+
+			virtual void 	execute(Client& client, Server& server);
+
+		protected:
+		
+			std::string 	channelName;
+			std::string 	mode;
+			std::string 	extraParam;
+			bool 			error;
+			std::string 	errorMessage;
 	};
 }
 

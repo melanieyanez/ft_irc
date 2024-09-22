@@ -9,15 +9,15 @@ namespace Commands
 {
 	class Pass : public Command
 	{
-	public:
-		Pass(std::vector<std::string> command_parts);
+		public:
 
-		virtual void execute(Client& client, Server& server);
+			Pass(std::vector<std::string> command_parts);
+			
+			virtual void 	execute(Client& client, Server& server);
 
-	protected:
-		std::string password;
+		protected:
 
-
+			std::string 	password;
 	};
 }
 

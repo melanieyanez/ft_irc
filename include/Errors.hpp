@@ -7,13 +7,15 @@
 
 class ReadError : public std::runtime_error
 {
-public:
-	ReadError(int error_code, Client& client);
-	Client& getClient();
+	public:
 
-private:
-	Client& client;
+		ReadError(int error_code, Client& client);
+		
+		Client& getClient();
 
+	private:
+
+		Client& client;
 };
 
 #endif

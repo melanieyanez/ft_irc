@@ -9,17 +9,18 @@ namespace Commands
 {
 	class Invite : public Command
 	{
-	public:
-		Invite(std::vector<std::string> command_parts);
+		public:
 
-		virtual void execute(Client& client, Server& server);
+			Invite(std::vector<std::string> command_parts);
+			
+			virtual void 	execute(Client& client, Server& server);
 
+		protected:
 
-	protected:
-		std::string target;
-		std::string channel;
-		bool		error;
-		std::string	errorMessage;
+			std::string 	target;
+			std::string 	channel;
+			bool			error;
+			std::string		errorMessage;
 	};
 }
 

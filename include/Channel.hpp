@@ -10,60 +10,62 @@ class Client;
 
 class Channel
 {
-public:
-	Channel(std::string name, std::string password);
+	public:
 
-	bool 					isMember(Client& client);
-	bool 					addMember(Client& client);
-	void 					removeMember(Client& client);
+		Channel(std::string name, std::string password);
 
-	void 					sendBack(std::string reply);
+		bool 					isMember(Client& client);
+		bool 					addMember(Client& client);
+		void 					removeMember(Client& client);
 
-	void 					setTopic(std::string topic);
-	void 					setLimits(unsigned int limit);
-	void 					setPassword(std::string password);
-	void 					setInvitationOnly(bool invitationOnly);
-	void					setProtected(bool protection);
-	void 					setTopicRestricted(bool topicRestricted);
-	void 					setLastTopicSetter(std::string nickName);
-	void 					setLastTopicSetTime();
+		void 					sendBack(std::string reply);
 
-	std::string 			getChannelName();
-	std::vector<Client*> 	getMembers();
-	std::string 			getMemberList();
-	std::string 			getTopic();
-	unsigned int 			getLimits();
-	unsigned int 			getMemberCount() const;
-	std::string 			getLastTopicSetter();
-	std::string 			getLastTopicSetTime();
+		void 					setTopic(std::string topic);
+		void 					setLimits(unsigned int limit);
+		void 					setPassword(std::string password);
+		void 					setInvitationOnly(bool invitationOnly);
+		void					setProtected(bool protection);
+		void 					setTopicRestricted(bool topicRestricted);
+		void 					setLastTopicSetter(std::string nickName);
+		void 					setLastTopicSetTime();
 
-
-
-	void 					invite(Client& client);
-	bool 					isInvited(Client& client);
-	bool 					isInvitationOnly();
-	bool					isProtected();
-	bool 					isTopicRestricted();
-	bool 					isCorrectKey(std::string key);
-
-	bool 					isOperator(Client& client);
-	void 					addOperator(Client& client);
-	void 					removeOperator(Client& client);
+		std::string 			getChannelName();
+		std::vector<Client*> 	getMembers();
+		std::string 			getMemberList();
+		std::string 			getTopic();
+		unsigned int 			getLimits();
+		unsigned int 			getMemberCount() const;
+		std::string 			getLastTopicSetter();
+		std::string 			getLastTopicSetTime();
 
 
-private:
-	std::string 			name;
-	std::string 			key;
-	std::vector<Client*> 	operators;
-	std::vector<Client*> 	members;
-	std::vector<Client*> 	invitedMembers;
-	std::string 			topic;
-	unsigned int 			memberLimit;
-	bool 					invitationOnly;
-	bool					protection;
-	bool 					topicRestricted;
-	std::string 			lastTopicSetter;
-	std::time_t 			lastTopicSetTime;
+
+		void 					invite(Client& client);
+		bool 					isInvited(Client& client);
+		bool 					isInvitationOnly();
+		bool					isProtected();
+		bool 					isTopicRestricted();
+		bool 					isCorrectKey(std::string key);
+
+		bool 					isOperator(Client& client);
+		void 					addOperator(Client& client);
+		void 					removeOperator(Client& client);
+
+
+	private:
+	
+		std::string 			name;
+		std::string 			key;
+		std::vector<Client*> 	operators;
+		std::vector<Client*> 	members;
+		std::vector<Client*> 	invitedMembers;
+		std::string 			topic;
+		unsigned int 			memberLimit;
+		bool 					invitationOnly;
+		bool					protection;
+		bool 					topicRestricted;
+		std::string 			lastTopicSetter;
+		std::time_t 			lastTopicSetTime;
 };
 
 #endif

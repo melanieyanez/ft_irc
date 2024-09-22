@@ -9,19 +9,19 @@ namespace Commands
 {
 	class Join : public Command
 	{
-	public:
-		Join(std::vector<std::string> command_parts);
+		public:
 
-		virtual void execute(Client& client, Server& server);
+			Join(std::vector<std::string> command_parts);
+			
+			virtual void 				execute(Client& client, Server& server);
 
+		protected:
 
-	protected:
-		std::string 				channelName;
-		std::vector<std::string> 	channels;
-		std::vector<std::string> 	keys;
-		bool						error;
-		std::string					errorMessage;
-
+			std::string 				channelName;
+			std::vector<std::string> 	channels;
+			std::vector<std::string> 	keys;
+			bool						error;
+			std::string					errorMessage;
 	};
 
 }

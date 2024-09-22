@@ -9,20 +9,22 @@ namespace Commands
 {
 	class Topic : public Command
 	{
-	public:
-		Topic(std::vector<std::string> command_parts);
+		public:
 
-		virtual void execute(Client& client, Server& server);
+			Topic(std::vector<std::string> command_parts);
+			
+			virtual void 	execute(Client& client, Server& server);
 
-	protected:
-		void setTopic(Client& client, Server& server, Channel& channel);
-		void getCurrentTopic(Client& client, Server& server, Channel& channel);
+		protected:
 
-		std::string channel;
-		std::string topic;
-		bool 		isSettingTopic;
-		bool 		error;
-		std::string errorMessage;
+			void 			setTopic(Client& client, Server& server, Channel& channel);
+			void 			getCurrentTopic(Client& client, Server& server, Channel& channel);
+
+			std::string 	channel;
+			std::string 	topic;
+			bool 			isSettingTopic;
+			bool 			error;
+			std::string 	errorMessage;
 	};
 }
 

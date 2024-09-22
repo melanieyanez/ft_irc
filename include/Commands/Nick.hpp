@@ -9,14 +9,15 @@ namespace Commands
 {
 	class Nick : public Command
 	{
-	public:
-		Nick(std::vector<std::string> command_parts);
+		public:
 
-		virtual void execute(Client& client, Server& server);
+			Nick(std::vector<std::string> command_parts);
+			
+			virtual void 	execute(Client& client, Server& server);
 
+		protected:
 
-	protected:
-		std::string name;
+			std::string 	name;
 
 	};
 }

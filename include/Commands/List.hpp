@@ -8,11 +8,14 @@ namespace Commands
 	class List : public Command
 	{
 		public:
+
 			List(std::vector<std::string> command_parts);
-			virtual void execute(Client& Client, Server& Server);
+			
+			virtual void 	execute(Client& Client, Server& Server);
 			
 		protected:
-			bool Param;
+
+			bool 			Param;
 	};
 };
 

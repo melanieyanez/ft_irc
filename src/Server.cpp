@@ -15,7 +15,6 @@
 #include "Commands/List.hpp"
 #include "Commands/Part.hpp"
 
-
 #include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>

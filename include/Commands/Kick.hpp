@@ -13,18 +13,19 @@ namespace Commands
 {
 	class Kick : public Command
 	{
-	public:
-		Kick(std::vector<std::string> command_parts);
+		public:
 
-		virtual void execute(Client& client, Server& server);
+			Kick(std::vector<std::string> command_parts);
+			
+			virtual void 	execute(Client& client, Server& server);
 
+		protected:
 
-	protected:
-		std::string channelName;
-		std::string nickname;
-		std::string reason;
-		bool		error;
-		std::string	errorMessage;
+			std::string 	channelName;
+			std::string 	nickname;
+			std::string 	reason;
+			bool			error;
+			std::string		errorMessage;
 	};
 }
 

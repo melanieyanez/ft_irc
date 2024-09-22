@@ -5,11 +5,11 @@
 
 class Command
 {
-public:
-	virtual void execute(Client& client, Server& server) = 0;
+	public:
+	
+		virtual void execute(Client& client, Server& server) = 0;
 
-protected:
-
+	protected:
 
 };
 

@@ -9,15 +9,17 @@ namespace Commands
 {
 	class Ison : public Command
 	{
-	public:
-		Ison(std::vector<std::string> command_parts);
-		virtual void execute(Client& client, Server& server);
+		public:
 
+			Ison(std::vector<std::string> command_parts);
+			
+			virtual void 				execute(Client& client, Server& server);
 
-	protected:
-		std::vector<std::string> users;
-		bool error;
-		std::string errorMessage;
+		protected:
+
+			std::vector<std::string> 	users;
+			bool 						error;
+			std::string 				errorMessage;
 	};
 }
 
