@@ -19,8 +19,10 @@ namespace Commands
 		void getCurrentTopic(Client& client, Server& server, Channel& channel);
 
 		std::string channel;
-		std::string topicMessage;
-		bool isSettingTopic;
+		std::string topic;
+		bool 		isSettingTopic;
+		bool 		error;
+		std::string errorMessage;
 	};
 }
 

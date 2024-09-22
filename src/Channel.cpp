@@ -1,8 +1,11 @@
 #include "Channel.hpp"
+#include <ctime>
 
 // pas fini =====================
 Channel::Channel(std::string name, std::string key) : name(name), key(key)
 {
+	this->invitationOnly = false;
+	this->topicRestricted = false;
 }
 
 void Channel::sendBack(std::string reply)
@@ -12,7 +15,6 @@ void Channel::sendBack(std::string reply)
 		(*it)->sendBack(reply);
 	}
 }
-
 
 std::string Channel::getChannelName()
 {
@@ -63,15 +65,9 @@ void Channel::removeMember(Client& client)
 	}
 }
 
-void Channel::setTopic(std::string topic, Client& client)
+void Channel::setTopic(std::string topic)
 {
-	if (!isTopicOperatorOnly)
-	{
-		this->topic = topic;
-		return;
-	}
-	if (isOperator(client))
-		this->topic = topic;
+	this->topic = topic;
 }
 
 std::string Channel::getTopic()
@@ -96,7 +92,12 @@ bool Channel::isInvited(Client& client)
 
 bool Channel::isInvitationOnly()
 {
-	return true;
+	return this->invitationOnly;
+}
+
+bool Channel::isTopicRestricted()
+{
+	return this->topicRestricted;
 }
 
 bool Channel::isOperator(Client& client)
@@ -152,7 +153,33 @@ void Channel::setInvitationOnly(bool invitationOnly)
 	this->invitationOnly = invitationOnly;
 }
 
+void Channel::setTopicRestricted(bool topicRestricted)
+{
+	this->topicRestricted = topicRestricted;
+}
+
+
 bool Channel::isCorrectKey(std::string key)
 {
 	return this->key == key;
+}
+
+std::string Channel::getLastTopicSetter()
+{
+	return this->lastTopicSetter;
+}
+
+void Channel::setLastTopicSetter(std::string nickName)
+{
+	this->lastTopicSetter = nickName;
+}
+
+std::string Channel::getLastTopicSetTime()
+{
+	return std::string(std::ctime(&this->lastTopicSetTime));
+}
+
+void Channel::setLastTopicSetTime()
+{
+	this->lastTopicSetTime = std::time(0);
 }

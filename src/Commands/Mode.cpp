@@ -91,10 +91,10 @@ void Commands::Mode::execute(Client& client, Server& server)
 
 		channel->addOperator(*target);
 
-		//informe tous les membres du channel
-		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " +o " + extraParam);
 		//confirme au demandeur
 		client.sendBack("MODE " + channelName + " +o " + extraParam, "client");
+		//informe tous les membres du channel
+		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " +o " + extraParam);
 	}
 
 	// supprime un user comme operateur dans un channel
@@ -123,15 +123,34 @@ void Commands::Mode::execute(Client& client, Server& server)
 	// ================== Définir/supprimer la limite d’utilisateurs pour le canal
 	if (mode == "+l")
 	{
-		// extraParam c'est le parametre[3]
-		int limit = std::stoi(extraParam);
-		channel->setLimits(limit);
-		client.sendBack("MODE " + channelName + " +l " + extraParam);
+		try
+		{
+			int limit = std::stoi(extraParam);
+			if (limit <= 0)
+			{
+				client.sendBack("461 MODE :Invalid limit");
+				return;
+			}
+
+	   		channel->setLimits(limit);
+			client.sendBack("MODE " + channelName + " +l " + extraParam, "client");
+			channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " +l " + extraParam);
+		}
+		catch (const std::invalid_argument& e)
+		{
+			client.sendBack("461 MODE :Invalid limit - Non-numeric input");
+		}
+		catch (const std::out_of_range& e)
+		{
+			client.sendBack("461 MODE :Invalid limit - Number out of range");
+		}
 	}
+	
 	if (mode == "-l")
 	{
 		channel->setLimits(-1);
-		client.sendBack("MODE " + channelName + " -l " + extraParam);
+		client.sendBack("MODE " + channelName + " -l", "client");
+		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " -l");
 	}
 
 	// ================== Définir/supprimer le mot de passe pour le canal
@@ -139,10 +158,10 @@ void Commands::Mode::execute(Client& client, Server& server)
 	{
 		// extraParam c'est le parametre[3]
 		 if (extraParam.empty())
-    	{
-        	client.sendBack("461 MODE :Password required for +k", "client");
-        	return;
-    	}
+		{
+			client.sendBack("461 MODE :Password required for +k", "client");
+			return;
+		}
 		channel->setPassword(extraParam);
 		client.sendBack("MODE " + channelName + " +k " + extraParam, "client");
 		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " +k " + extraParam);
@@ -150,10 +169,10 @@ void Commands::Mode::execute(Client& client, Server& server)
 	if (mode == "-k")
 	{
 		if (extraParam.empty() || !channel->isCorrectKey(extraParam))
-    	{
-        	client.sendBack("464 " + channelName + " :Incorrect password");
-        	return;
-    	}
+		{
+			client.sendBack("464 " + channelName + " :Incorrect password");
+			return;
+		}
 		channel->setPassword("");
 		client.sendBack("MODE " + channelName + " -k ");
 		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " -k");
@@ -173,7 +192,17 @@ void Commands::Mode::execute(Client& client, Server& server)
 		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " -i");
 	}
 
-	/* a faire
-		— t : Définir/supprimer les restrictions de la commande TOPIC pour les opé- rateurs de canaux
-	*/
+	// ================== Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs de canaux
+	if (mode == "+t")
+	{
+		channel->setTopicRestricted(true);
+		client.sendBack("MODE " + channelName + " +t", "client");
+    	channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " +t");
+	}
+	if (mode == "-t")
+	{
+		channel->setTopicRestricted(false);
+		client.sendBack("MODE " + channelName + " -t", "client");
+    	channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " -t");
+	}
 }
