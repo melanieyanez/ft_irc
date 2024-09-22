@@ -1,12 +1,17 @@
-#include "Commands/Invit.hpp"
+#include "Commands/Invite.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Server.hpp"
 
 Commands::Invite::Invite(std::vector<std::string> command_parts)
 {
+	this->error = false;
 	if (command_parts.size() != 3)
-		throw ;
+	{
+		this->error = true;
+		this->errorMessage = "999 TOPIC :Invalid number of parameters.";
+		return;
+	}
 
 	this->target = command_parts[1];
 	this->channel = command_parts[2];
@@ -14,12 +19,24 @@ Commands::Invite::Invite(std::vector<std::string> command_parts)
 
 void Commands::Invite::execute(Client& client, Server& server)
 {
-	Channel* channel = server.getChannel(this->channel);
+	if (this->error)
+	{
+		client.sendBack(this->errorMessage, "client");
+		return;
+	}
+
+	Channel	*channel = server.getChannel(this->channel);
 
 	// check si le server existe
 	if (!channel)
 	{
-		client.sendMessage("Channel : " + this->channel + " does not exist");
+		client.sendBack("403 " + this->channel + " :No such channel", "client");
+		return;
+	}
+
+	if (!channel->isOperator(client))
+	{
+		client.sendBack("482 " + channel->getChannelName() + " :You're not channel operator", "client");
 		return;
 	}
 
@@ -29,14 +46,14 @@ void Commands::Invite::execute(Client& client, Server& server)
 	// si la personne existe pas = notification
 	if (!target)
 	{
-		client.sendMessage("User : " + this->target + " does not exist");
+		client.sendBack("401 " + client.getNickname() + " " + this->target + " :No such nick/channel", "client");
 		return;
 	}
 
 	// check si la personne est deja dans le channel
 	if (channel->isMember(*target))
 	{
-		client.sendMessage("User : " + this->target + " is already in the channel");
+		client.sendBack("443 " + client.getNickname() + " " + this->target + " " + this->channel + " :is already on channel",  "client");
 		return;
 	}
 

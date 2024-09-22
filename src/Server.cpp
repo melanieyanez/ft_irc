@@ -9,7 +9,7 @@
 #include "Commands/Kick.hpp"
 #include "Commands/Topic.hpp"
 #include "Commands/Mode.hpp"
-#include "Commands/Invit.hpp"
+#include "Commands/Invite.hpp"
 #include "Commands/Help.hpp"
 #include "Commands/Who.hpp"
 #include "Commands/List.hpp"

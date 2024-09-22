@@ -1,13 +1,12 @@
 #include "Commands/Topic.hpp"
 
-
 Commands::Topic::Topic(std::vector<std::string> command_parts)
 {
 	this->error = false;
 	if (command_parts.size() < 2 || command_parts.size() > 3)
 	{
 		this->error = true;
-		this->errorMessage = "461 MODE :Not enough parameters.";
+		this->errorMessage = "999 TOPIC :Invalid number of parameters.";
 		return;
 	}
 	
@@ -33,7 +32,7 @@ void Commands::Topic::execute(Client& client, Server& server)
 	// si le channel n'existe pas
 	if (!channel)
 	{
-		client.sendMessage("403 " + this->channel + " :No such channel");
+		client.sendBack("403 " + this->channel + " :No such channel", "client");
 		return;
 	}
 

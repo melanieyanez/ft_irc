@@ -18,7 +18,8 @@ namespace Commands
 	protected:
 		std::string target;
 		std::string channel;
-
+		bool		error;
+		std::string	errorMessage;
 	};
 }
 

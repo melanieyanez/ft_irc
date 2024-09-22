@@ -11,13 +11,9 @@ Commands::Help::Help(std::vector<std::string> command_parts)
 		this->errorMessage = "461 HELP :Syntax error, too many arguments.";
 	}
 	else if (command_parts.size() == 2)
-	{
 		this->command = command_parts[1];
-	}
 	else
-	{
 		this->command = "";
-	}
 }
 
 void Commands::Help::execute(Client& client, Server& server)
