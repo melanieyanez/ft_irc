@@ -9,7 +9,7 @@ Commands::Invite::Invite(std::vector<std::string> command_parts)
 	if (command_parts.size() != 3)
 	{
 		this->error = true;
-		this->errorMessage = "999 TOPIC :Invalid number of parameters.";
+		this->errorMessage = "999 INVITE :Invalid number of parameters.";
 		return;
 	}
 

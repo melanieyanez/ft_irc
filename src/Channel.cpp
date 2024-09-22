@@ -53,6 +53,23 @@ std::vector<Client*> Channel::getMembers()
 	return members;
 }
 
+std::string Channel::getMemberList()
+{
+	std::string memberList;
+
+	for (std::vector<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
+	{
+		if (isOperator(**it))
+			memberList += "@" + (*it)->getNickname() + " ";
+		else
+			memberList += (*it)->getNickname() + " ";
+	}
+	if (!memberList.empty())
+		memberList.pop_back();
+
+	return memberList;
+}
+
 void Channel::removeMember(Client& client)
 {
 	for (std::vector<Client*>::iterator it = members.begin(); it != members.end(); ++it)
@@ -101,6 +118,11 @@ bool Channel::isInvited(Client& client)
 bool Channel::isInvitationOnly()
 {
 	return this->invitationOnly;
+}
+
+bool Channel::isProtected()
+{
+	return this->protection;
 }
 
 bool Channel::isTopicRestricted()
@@ -159,6 +181,11 @@ void Channel::setPassword(std::string key)
 void Channel::setInvitationOnly(bool invitationOnly)
 {
 	this->invitationOnly = invitationOnly;
+}
+
+void Channel::setProtected(bool protection)
+{
+	this->protection = protection;
 }
 
 void Channel::setTopicRestricted(bool topicRestricted)

@@ -156,6 +156,11 @@ void Commands::Mode::execute(Client& client, Server& server)
 	// ================== Définir/supprimer le mot de passe pour le canal
 	if (mode == "+k")
 	{
+		if (channel->isProtected())
+		{
+			client.sendBack("467 " + client.getNickname() + " " + channelName + " :Channel key already set", "client");
+			return;
+		}
 		// extraParam c'est le parametre[3]
 		 if (extraParam.empty())
 		{
@@ -163,6 +168,7 @@ void Commands::Mode::execute(Client& client, Server& server)
 			return;
 		}
 		channel->setPassword(extraParam);
+		channel->setProtected(true);
 		client.sendBack("MODE " + channelName + " +k " + extraParam, "client");
 		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " +k " + extraParam);
 	}
@@ -170,10 +176,11 @@ void Commands::Mode::execute(Client& client, Server& server)
 	{
 		if (extraParam.empty() || !channel->isCorrectKey(extraParam))
 		{
-			client.sendBack("464 " + channelName + " :Incorrect password");
+			client.sendBack("464 " + channelName + " :Incorrect password", "client");
 			return;
 		}
 		channel->setPassword("");
+		channel->setProtected(false);
 		client.sendBack("MODE " + channelName + " -k ");
 		channel->sendBack(":" + client.getNickname() + " MODE " + channelName + " -k");
 	}

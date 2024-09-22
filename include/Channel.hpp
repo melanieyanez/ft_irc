@@ -23,12 +23,14 @@ public:
 	void 					setLimits(unsigned int limit);
 	void 					setPassword(std::string password);
 	void 					setInvitationOnly(bool invitationOnly);
+	void					setProtected(bool protection);
 	void 					setTopicRestricted(bool topicRestricted);
 	void 					setLastTopicSetter(std::string nickName);
 	void 					setLastTopicSetTime();
 
 	std::string 			getChannelName();
 	std::vector<Client*> 	getMembers();
+	std::string 			getMemberList();
 	std::string 			getTopic();
 	unsigned int 			getLimits();
 	unsigned int 			getMemberCount() const;
@@ -40,6 +42,7 @@ public:
 	void 					invite(Client& client);
 	bool 					isInvited(Client& client);
 	bool 					isInvitationOnly();
+	bool					isProtected();
 	bool 					isTopicRestricted();
 	bool 					isCorrectKey(std::string key);
 
@@ -57,6 +60,7 @@ private:
 	std::string 			topic;
 	unsigned int 			memberLimit;
 	bool 					invitationOnly;
+	bool					protection;
 	bool 					topicRestricted;
 	std::string 			lastTopicSetter;
 	std::time_t 			lastTopicSetTime;

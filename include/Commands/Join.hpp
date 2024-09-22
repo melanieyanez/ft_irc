@@ -16,9 +16,12 @@ namespace Commands
 
 
 	protected:
-		std::string channelName;
-		std::vector<std::string> channels;
-		std::vector<std::string> keys;
+		std::string 				channelName;
+		std::vector<std::string> 	channels;
+		std::vector<std::string> 	keys;
+		bool						error;
+		std::string					errorMessage;
+
 	};
 
 }
