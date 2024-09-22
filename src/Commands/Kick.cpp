@@ -1,35 +1,34 @@
 #include "Commands/Kick.hpp"
 #include "Server.hpp"
-#include <iostream>
 
 Commands::Kick::Kick(std::vector<std::string> command_parts)
 {
 	this->error = false;
 
-    if (command_parts.size() < 3)
-    {
-        this->error = true;
-        this->errorMessage = "999 KICK :Invalid number of parameters.";
-        return;
-    }
+	if (command_parts.size() < 3)
+	{
+		this->error = true;
+		this->errorMessage = "999 KICK :Invalid number of parameters.";
+		return;
+	}
 	
 	this->channelName = command_parts[1];
-    this->nickname = command_parts[2];
+	this->nickname = command_parts[2];
 
-    if (command_parts.size() >= 4)
-    {
-        if (command_parts[3][0] == ':')
-        {
-         	this->reason = command_parts[3].substr(1);
-            for (size_t i = 4; i < command_parts.size(); ++i)
-                this->reason += " " + command_parts[i];
-        }
-        else
-        {
-            this->error = true;
-            this->errorMessage = "999 KICK :Invalid number of parameters.";
-            return;
-    	}
+	if (command_parts.size() >= 4)
+	{
+		if (command_parts[3][0] == ':')
+		{
+		 	this->reason = command_parts[3].substr(1);
+			for (size_t i = 4; i < command_parts.size(); ++i)
+				this->reason += " " + command_parts[i];
+		}
+		else
+		{
+			this->error = true;
+			this->errorMessage = "999 KICK :Invalid number of parameters.";
+			return;
+		}
 	}
 }
 

@@ -15,8 +15,11 @@ namespace Commands
 		virtual void execute(Client& client, Server& server);
 
 	protected:
-		std::vector<std::string> names;
-		std::string message;
+		std::vector<std::string> 	recipients;
+		std::string 				message;
+		bool						error;
+		std::string					errorMessage;
+		size_t						MAX_MESSAGE_LENGTH;
 	};
 }
 
