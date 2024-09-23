@@ -12,6 +12,7 @@ class Command
 	protected:
 		bool 		error;
 		std::string	errorMessage;
+		int			errorCode;
 
 };
 

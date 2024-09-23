@@ -34,8 +34,7 @@ class Client
 
 		std::string readNextPacket();
 		void 		sendBack(std::string reply, std::string target = "both");
-		void 		sendMessage(std::string message);
-
+		void 		sendMessage(std::string message, std::string target = "both");
 		void 		closeConnection();
 
 	private:

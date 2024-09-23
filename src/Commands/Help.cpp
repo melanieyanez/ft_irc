@@ -1,6 +1,7 @@
 #include "Commands/Help.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Reply.hpp"
 
 Commands::Help::Help(std::vector<std::string> command_parts)
 {
@@ -8,7 +9,7 @@ Commands::Help::Help(std::vector<std::string> command_parts)
 	if (command_parts.size() > 2)
 	{
 		this->error = true;
-		this->errorMessage = "461 HELP :Syntax error, too many arguments.";
+		this->errorCode = 461;
 	}
 	else if (command_parts.size() == 2)
 		this->command = command_parts[1];
@@ -19,10 +20,11 @@ Commands::Help::Help(std::vector<std::string> command_parts)
 void Commands::Help::execute(Client& client, Server& server)
 {
 	(void)server;
+    Reply reply;
 
 	if (this->error)
 	{
-		client.sendBack(this->errorMessage, "client");
+		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "HELP", "");
 		return;
 	}
 
@@ -30,39 +32,39 @@ void Commands::Help::execute(Client& client, Server& server)
 	{
 		if (this->command.empty())
 		{
-			client.sendBack("704 :Help for: Connection\n", "client");
-			client.sendBack(generateLoginHelp(), "client");
-			client.sendBack("705 :End of HELP", "client");
+            reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
+			client.sendMessage(generateLoginHelp(), "client");
+            reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
 		}
 		else
-			client.sendBack("451 HELP :You have not registered", "client");
+            reply.sendReply(451, client, NULL, NULL, &server, "HELP", "");
 		return;
 	}
 
 	std::string helpMessage;
 
-	helpMessage += "\r\n\r\n";
+	helpMessage += "\r\n\r";
 
 	if (this->command.empty())
 	{
-		client.sendBack("704 " + client.getNickname() + " :Help for: General", "client");
+        reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 		helpMessage += generateGeneralHelp();
 	}
 	else
 	{
-		client.sendBack("704 " + client.getNickname() + " :Help for: " + this->command, "client");
+        reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 		helpMessage += generateCommandHelp(this->command);
 	}
 
-	client.sendBack(helpMessage, "client");
-	client.sendBack("705 " + client.getNickname() + " :End of HELP", "client");
+	client.sendMessage(helpMessage, "client");
+    reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
 }
 
 std::string Commands::Help::generateLoginHelp()
 {
 	std::string helpMessage;
 
-	helpMessage += "To use IRC commands, you first need to log in.\r\n";
+	helpMessage += "\nTo use IRC commands, you first need to log in.\r\n";
 	helpMessage += "Here are the commands you need to authenticate:\r\n\r\n";
 
 	helpMessage += "PASS <password> - Provide the password for the server.\r\n";

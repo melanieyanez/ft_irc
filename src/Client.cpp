@@ -25,6 +25,8 @@ Client::~Client()
 
 std::string Client::getNickname()
 {
+	if (nickname.empty())
+		return "*";
 	return nickname;
 }
 
@@ -127,9 +129,13 @@ void Client::sendBack(std::string reply, std::string target)
 		std::cout << reply;
 }
 
-void Client::sendMessage(std::string message)
+void Client::sendMessage(std::string message, std::string target)
 {
-	std::cout << message << std::endl;
+    message += "\r\n";
+    if (target == "client" || target == "both")
+        write(fd, message.c_str(), message.length());
+    if (target == "console" || target == "both")
+        std::cout << message;
 }
 
 void Client::closeConnection() {
