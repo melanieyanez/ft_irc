@@ -12,12 +12,14 @@ namespace Commands
 		public:
 
 			Pass(std::vector<std::string> command_parts);
-			
+
 			virtual void 	execute(Client& client, Server& server);
 
 		protected:
 
 			std::string 	password;
+			bool			error;
+			std::string		errorMessage;
 	};
 }
 

@@ -6,6 +6,10 @@
 
 Client::Client(Server& server, int fd, std::string hostname) : server(server)
 {
+	this->isAuthenticated = false;
+	this->password = "";
+	this->nickname = "";
+
 	std::cout << "Client<" << this << ">: " << fd << std::endl;
 	this->fd = fd;
 	this->hostname = hostname;
@@ -44,6 +48,21 @@ std::string Client::getFullIdentifier()
 	return nickname + "!" + username + "@" + hostname;
 }
 
+bool Client::getIsAuthenticated() const
+{
+	return this->isAuthenticated;
+}
+
+bool Client::hasNick() const
+{
+	return !this->nickname.empty();
+}
+
+bool Client::hasPass() const
+{
+	return !this->password.empty();
+}
+
 void Client::setNickname(std::string nickname)
 {
 	this->nickname = nickname;
@@ -62,6 +81,11 @@ void Client::setFullname(std::string fullname)
 void Client::setPassword(std::string password)
 {
 	this->password = password;
+}
+
+void Client::authenticate()
+{
+	this->isAuthenticated = true;
 }
 
 std::string Client::readNextPacket()

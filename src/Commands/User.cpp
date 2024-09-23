@@ -19,5 +19,8 @@ void Commands::User::execute(Client& client, Server& server)
 	if (server.getPassword() != client.getPassword())
 		client.sendBack("464 " + client.getNickname() + " :Password Incorrect");
 	else
+	{
+		client.authenticate();
 		client.sendBack("001 " + client.getNickname() + " :Welcome to the Internet Relay Network " + client.getFullIdentifier());
+	}
 }

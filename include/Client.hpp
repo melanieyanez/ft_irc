@@ -12,7 +12,7 @@ class Channel;
 class Client
 {
 	public:
-	
+
 		Client(Server& server, int fd, std::string hostname);
 		~Client();
 
@@ -21,11 +21,16 @@ class Client
 		std::string getFullname();
 		std::string getPassword();
 		std::string getFullIdentifier();
+		bool		getIsAuthenticated() const;
+
+		bool		hasPass() const;
+		bool		hasNick() const;
 
 		void 		setNickname(std::string nickname);
 		void 		setUsername(std::string username);
 		void 		setFullname(std::string fullname);
 		void 		setPassword(std::string password);
+		void		authenticate();
 
 		std::string readNextPacket();
 		void 		sendBack(std::string reply, std::string target = "both");
@@ -40,6 +45,8 @@ class Client
 		std::string fullname;
 		std::string password;
 		int 		fd;
+
+		bool		isAuthenticated;
 
 		std::string line;
 		Server		&server;

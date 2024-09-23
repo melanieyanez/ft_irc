@@ -235,12 +235,18 @@ void Server::handleCommand(std::string command, Client* creator)
 	std::string command_name = command_parts[0];
 	std::transform(command_name.begin(), command_name.end(), command_name.begin(), toupper);
 
-	if (command_name == "NICK")
+	if (command_parts[0] != "PASS" && command_parts[0] != "NICK" && command_parts[0] != "USER" && !creator->getIsAuthenticated())
+	{
+		creator->sendBack("451 " + command_parts[0] + " :You have not registered");
+		return;
+	}
+
+	else if (command_name == "PASS")
+		Commands::Pass(command_parts).execute(*creator, *this);
+	else if (command_name == "NICK")
 		Commands::Nick(command_parts).execute(*creator, *this);
 	else if (command_name == "USER")
 		Commands::User(command_parts).execute(*creator, *this);
-	else if (command_name == "PASS")
-		Commands::Pass(command_parts).execute(*creator, *this);
 	else if (command_name == "PRIVMSG")
 		Commands::Privmsg(command_parts).execute(*creator, *this);
 	else if (command_name == "ISON")
@@ -265,7 +271,7 @@ void Server::handleCommand(std::string command, Client* creator)
 		Commands::Part(command_parts).execute(*creator, *this);
 	else
 	{
-		std::cout << "handle command: Invalid command" << std::endl;
+		std::cout << "handle command: Invalid command" << std::endl; //mettre 999
 	}
 }
 
