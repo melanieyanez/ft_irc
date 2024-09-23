@@ -3,7 +3,7 @@
 Commands::Topic::Topic(std::vector<std::string> command_parts)
 {
 	this->error = false;
-	if (command_parts.size() < 2 || command_parts.size() > 3)
+	if (command_parts.size() < 2)
 	{
 		this->error = true;
 		this->errorMessage = "999 TOPIC :Invalid number of parameters.";
@@ -13,9 +13,26 @@ Commands::Topic::Topic(std::vector<std::string> command_parts)
 	this->channel = command_parts[1];
 
 	// check si il y a un topic
-	isSettingTopic = (command_parts.size() == 3);
-	if (isSettingTopic)
-		this->topic = command_parts[2];
+	isSettingTopic = (command_parts.size() >= 3);
+    if (isSettingTopic)
+    {
+        if (command_parts.size() > 3 && command_parts[2][0] != ':')
+        {
+            this->error = true;
+            this->errorMessage = "999 TOPIC :Syntax error in topic definition.";
+            return;
+        }
+
+        if (command_parts[2][0] == ':')
+        {
+            this->topic = command_parts[2].substr(1);
+
+            for (size_t i = 3; i < command_parts.size(); ++i)
+                this->topic += " " + command_parts[i];
+        }
+        else
+            this->topic = command_parts[2];
+	}
 }
 
 void Commands::Topic::execute(Client& client, Server& server)

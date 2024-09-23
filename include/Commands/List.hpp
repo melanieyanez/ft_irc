@@ -12,10 +12,6 @@ namespace Commands
 			List(std::vector<std::string> command_parts);
 			
 			virtual void 	execute(Client& Client, Server& Server);
-			
-		protected:
-
-			bool 			Param;
 	};
 };
 
