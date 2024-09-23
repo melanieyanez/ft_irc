@@ -9,6 +9,12 @@ Channel::Channel(std::string name, std::string key) : name(name), key(key)
 	this->topicRestricted = false;
 }
 
+void Channel::sendMessage(std::string message)
+{
+	for (std::vector<Client*>::iterator it = members.begin(); it != members.end(); ++it)
+		(*it)->sendMessage(message);
+}
+
 void Channel::sendBack(std::string reply)
 {
 	for (std::vector<Client*>::iterator it = members.begin(); it != members.end(); ++it)

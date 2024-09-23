@@ -4,11 +4,11 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 {
 	switch (code)
 	{
-		case 001:
+		case 001: //USED
 			rplWelcome(client);
 			break;
-		case 303:
-			rplIson(client, *server);
+		case 303: //USED
+			rplIson(client, extra);
 			break;
 		case 315:
 			rplEndOfWho(client);
@@ -32,26 +32,34 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 			if (channel)
 				rplTopicWhoTime(*channel, client);
 			break;
-		case 341:
-            if (target && channel)
-                rplInviting(client, *channel, *target, *server);
-            break;
+		case 341: //USED
+			if (target && channel)
+				rplInviting(client, *channel, *target, *server);
+			break;
 		case 352:
 			if (channel)
 				rplWhoReply(*channel, client);
 			break;
-		case 401:
+		case 353: //USED
+			if (channel)
+				rplNamReply(client, *channel);
+			break;
+		case 366: //USED
+			if (channel)
+				rplEndOfNames(client, *channel);
+			break;
+		case 401: //USED
 			errNoSuchNick(client, extra);
 			break;
-		case 403:
+		case 403: //USED
 			errNoSuchChannel(client, extra);
 			break;
 		case 404:
 			if (channel)
 				errCannotSendToChan(*channel, client);
 			break;
-		case 431:
-			errNoNickNameGiven(client);
+		case 431: //USED
+			errNoNickNameGiven(client, command);
 			break;
 		case 432:
 			errErroneousNickName(client);
@@ -63,66 +71,65 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 			if (channel)
 				errUserNotInChannel(client, *channel);
 			break;
-		case 442:
+		case 442: //USED
 			if (channel)
 				errNotOnChannel(client, *channel);
 			break;
-		case 443:
+		case 443: //USED
 			if (channel)
-				errUserOnChannel(client, *channel, *target);
+				errUserOnChannel(client, *channel, extra);
 			break;
-		case 451:
+		case 451: //USED
 			errNotRegistered(client, command);
 			break;
-		case 461:
+		case 461: //USED
 			errNeedMoreParams(client, command);
 			break;
-		case 462:
-			errAlreadyRegistered(client);
+		case 462: //USED
+			errAlreadyRegistered(client, command);
 			break;
 		case 464:
 			errPasswordMismatch(client);
 			break;
-		case 471:
+		case 471: //USED
 			if (channel)
-				errChannelIsFull(*channel);
+				errChannelIsFull(client, *channel);
 			break;
-		case 473:
+		case 473: //USED
 			if (channel)
-				errInviteOnlyChan(*channel);
+				errInviteOnlyChan(client, *channel);
 			break;
-		case 475:
+		case 475: //USED
 			if (channel)
-				errBadChannelKey(*channel);
+				errBadChannelKey(client, *channel);
 			break;
-		case 482:
+		case 482: //USED
 			if (channel)
 				errChanOpPrivsNeeded(*channel, client);
 			break;
-		case 704:
+		case 704: //USED
 			rplHelpStart(client, command);
 			break;
-        case 705:
+		case 705: //USED
 			rplEndOfHelp(client, command);
 			break;
-		case 999:
-			errUnknownCommand(client);
+		case 999: //USED
+			errUnknownCommand(client, command);
 			break;
 		default:
-            client.sendBack("Unknown reply code: " + std::to_string(code));
+			client.sendBack("Unknown reply code: " + std::to_string(code));
 	}
 }
 
 
 void Reply::rplWelcome(Client &client)
 {
-	client.sendBack("001 " + client.getNickname() + " :Welcome to the Internet Relay Network " + client.getNickname() + "!");
+	client.sendBack("001 " + client.getNickname() + " :Welcome to the Internet Relay Network " + client.getNickname() + "!", "client");
 }
 
-void Reply::rplIson(Client &client, Server &server)
+void Reply::rplIson(Client &client, std::string extra)
 {
-	(void)client;
-	(void)server;
+	client.sendBack("303 " + client.getNickname() + " :" + extra, "client");
 }
 
 void Reply::rplEndOfWho(Client &client)
@@ -167,6 +174,16 @@ void Reply::rplWhoReply(Channel &channel, Client &client)
 	client.sendBack("352 * " + channel.getChannelName() + " " + userInfo + " :H");
 }
 
+void Reply::rplNamReply(Client &client, Channel &channel)
+{
+	client.sendBack("353 " + client.getNickname() + " = " + channel.getChannelName() + " :" + channel.getMemberList(), "client");
+}
+
+void Reply::rplEndOfNames(Client &client, Channel &channel)
+{
+	client.sendBack("366 " + client.getNickname() + " " + channel.getChannelName() + " :End of /NAMES list.", "client");
+}
+
 void Reply::errNoSuchNick(Client &client, std::string extra)
 {
 	client.sendBack("401 " + client.getNickname() + " " + extra + " :No such nick/channel");
@@ -182,9 +199,9 @@ void Reply::errCannotSendToChan(Channel &channel, Client &client)
 	client.sendBack("404 * " + channel.getChannelName() + " :Cannot send to channel");
 }
 
-void Reply::errNoNickNameGiven(Client &client)
+void Reply::errNoNickNameGiven(Client &client, std::string command)
 {
-	client.sendBack("431 * :No nickname given");
+	client.sendBack("431 " + client.getNickname() + " " + command + " :No nickname given", "client");
 }
 
 void Reply::errErroneousNickName(Client &client)
@@ -207,9 +224,9 @@ void Reply::errNotOnChannel(Client &client, Channel &channel)
 	client.sendBack("442 " + client.getNickname() + " " + channel.getChannelName() + " :You're not on that channel");
 }
 
-void Reply::errUserOnChannel(Client &client, Channel &channel, Client &target)
+void Reply::errUserOnChannel(Client &client, Channel &channel, std::string extra)
 {
-	client.sendBack("443 " + client.getNickname() + " " + target.getNickname() + " " + channel.getChannelName() + " :is already on channel", "client");
+	client.sendBack("443 " + client.getNickname() + " " + extra + " " + channel.getChannelName() + " :is already on channel", "client");
 }
 
 void Reply::errNotRegistered(Client &client, std::string command)
@@ -222,9 +239,9 @@ void Reply::errNeedMoreParams(Client &client, std::string command)
 	client.sendBack("461 " + client.getNickname() + " " + command + " :Wrong number of parameters", "client");
 }
 
-void Reply::errAlreadyRegistered(Client &client)
+void Reply::errAlreadyRegistered(Client &client, std::string command)
 {
-	client.sendBack("462 " + client.getNickname() + " :You may not reregister");
+	client.sendBack("462 " + client.getNickname() + " " + command + " :You may not reregister", "client");
 }
 
 void Reply::errPasswordMismatch(Client &client)
@@ -232,19 +249,19 @@ void Reply::errPasswordMismatch(Client &client)
 	client.sendBack("464 " + client.getNickname() + " :Password incorrect");
 }
 
-void Reply::errChannelIsFull(Channel &channel)
+void Reply::errChannelIsFull(Client &client, Channel &channel)
 {
-	channel.sendBack("471 * " + channel.getChannelName() + " :Cannot join channel (+l) - Channel is full");
+	client.sendBack("471 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+l) - Channel is full.", "client");
 }
 
-void Reply::errInviteOnlyChan(Channel &channel)
+void Reply::errInviteOnlyChan(Client &client, Channel &channel)
 {
-	channel.sendBack("473 * " + channel.getChannelName() + " :Cannot join channel (+i)");
+	client.sendBack("473 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+i) - You are not invited.", "client");
 }
 
-void Reply::errBadChannelKey(Channel &channel)
+void Reply::errBadChannelKey(Client &client, Channel &channel)
 {
-	channel.sendBack("475 * " + channel.getChannelName() + " :Cannot join channel (+k) - Wrong key");
+	client.sendBack("475 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+k) - Wrong key.", "client");
 }
 
 void Reply::errChanOpPrivsNeeded(Channel &channel, Client &client)
@@ -262,8 +279,8 @@ void Reply::rplEndOfHelp(Client &client, const std::string command)
 	client.sendBack("705 " + client.getNickname() + " " + command + " :End of help message", "client");
 }
 
-void Reply::errUnknownCommand(Client &client)
+void Reply::errUnknownCommand(Client &client, const std::string command)
 {
-	client.sendBack("999 " + client.getNickname() + " :Unknown command");
+	client.sendBack("999 " + client.getNickname() + " " + command + " :Invalid format", "client");
 }
 

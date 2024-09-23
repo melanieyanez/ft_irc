@@ -1,6 +1,7 @@
 #include "Commands/Ison.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Reply.hpp"
 
 #include <sstream>
 
@@ -10,7 +11,7 @@ Commands::Ison::Ison(std::vector<std::string> command_parts)
 	if (command_parts.size() < 2)
 	{
 		this->error = true;
-		this->errorMessage = "461 ISON :Not enough parameters.";
+		this->errorCode = 461;
 		return;
 	}
 
@@ -25,19 +26,21 @@ Commands::Ison::Ison(std::vector<std::string> command_parts)
 
 void Commands::Ison::execute(Client& client, Server& server)
 {
+	Reply reply;
+
 	if (this->error)
 	{
-		client.sendBack(this->errorMessage, "client");
+		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "ISON");
 		return;
 	}
 
-	std::string response = "303 " + client.getNickname() + " :";
+	std::string onlineUsers;
 
 	for (std::vector<std::string>::iterator it = users.begin(); it != users.end(); ++it)
 	{
 		if (server.isNicknameConnected(*it))
-			response += *it + " ";
+			onlineUsers += *it + " ";
 	}
 
-	client.sendBack(response, "client");
+	reply.sendReply(303, client, NULL, NULL, &server, "", onlineUsers);
 }

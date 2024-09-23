@@ -62,16 +62,12 @@ void Commands::Invite::execute(Client& client, Server& server)
 	// check si la personne est deja dans le channel
 	if (channel->isMember(*target))
 	{
-		reply.sendReply(443, client, target, channel, &server, "INVITE", "");
+		reply.sendReply(443, client, NULL, channel, &server, "INVITE", target->getNickname());
 		return;
 	}
 
 	// ajoute la personne au channel
 	channel->invite(*target);
 
-	// envois le message d'invitation a la personne
 	reply.sendReply(341, client, target, channel, &server, "INVITE", "");
-
-	// envois le message a moi meme pour me dire que l'invitation a ete transmise
-	//reply.sendReply(705, client, NULL, channel, &server, "INVITE", "");
 }

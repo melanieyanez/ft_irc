@@ -1,7 +1,7 @@
 #include "Commands/Join.hpp"
-#include "Server.hpp"
 #include "Client.hpp"
-#include "Channel.hpp"
+#include "Server.hpp"
+#include "Reply.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -14,13 +14,12 @@ Commands::Join::Join(std::vector<std::string> command_parts)
 	if (command_parts.size() < 2)
 	{
 		this->error = true;
-		this->errorMessage = "999 JOIN :Invalid number of parameters.";
+		this->errorCode = 461;
 		return;
 	}
 
 	std::stringstream channelStream(command_parts[1]);
 	std::string channel;
-
 	while (std::getline(channelStream, channel, ','))
 		this->channels.push_back(channel);
 
@@ -38,9 +37,11 @@ Commands::Join::Join(std::vector<std::string> command_parts)
 
 void Commands::Join::execute(Client& client, Server& server)
 {
+	Reply reply;
+
 	if (this->error)
 	{
-		client.sendBack(this->errorMessage, "client");
+		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "JOIN");
 		return;
 	}
 
@@ -57,9 +58,8 @@ void Commands::Join::execute(Client& client, Server& server)
 
 		if (channel && channel->isProtected())
 			channelKeyMap[channelName] = key;
-		
 		else
-			channelKeyMap[channelName] = " ";
+			channelKeyMap[channelName] = "";
 	}
 
 	for (std::map<std::string, std::string>::iterator it = channelKeyMap.begin(); it != channelKeyMap.end(); ++it)
@@ -79,39 +79,36 @@ void Commands::Join::execute(Client& client, Server& server)
 
 		if (channel->isProtected() && !channel->isCorrectKey(key))
 		{
-			client.sendBack("475 " + channelName + " :Cannot join channel (+k) - Wrong key.");
+			reply.sendReply(475, client, NULL, channel, &server, "JOIN");
 			continue;
 		}
 
 		if (channel->isMember(client))
 		{
-			client.sendBack("443 " + client.getNickname() + " " + channelName + " :You are already in the channel");
+			reply.sendReply(443, client, NULL, channel, &server, "JOIN", client.getNickname());
 			continue;
 		}
 
 		if (channel->isInvitationOnly() && !channel->isMember(client) && !channel->isInvited(client))
 		{
-			client.sendBack("473 " + channelName + " :Cannot join channel (+i) - You are not invited.");
+			reply.sendReply(473, client, NULL, channel, &server, "JOIN");
 			continue;
 		}
 
 		if (!channel->addMember(client))
 		{
-			client.sendBack("471 " + channelName + " :Cannot join channel (+l) - Channel is full.");
+			reply.sendReply(471, client, NULL, channel, &server, "JOIN");
 			continue;
 		}
 
-		client.sendBack(client.getFullIdentifier() + " JOIN " + channelName);
-		channel->sendBack(client.getFullIdentifier() + " JOIN " + channelName);		
-
-		std::string memberList = channel->getMemberList();
-		client.sendBack("353 " + client.getNickname() + " = " + channelName + " :" + memberList, "client");
-
-		client.sendBack("366 " + client.getNickname() + " " + channelName + " :End of /NAMES list", "client");
+		channel->sendMessage(":" + client.getNickname() + "!" + client.getUsername() + "@" + server.getHostname() + " JOIN :" + channel->getChannelName());
+		reply.sendReply(353, client, NULL, channel, &server, "JOIN");
+		reply.sendReply(366, client, NULL, channel, &server, "JOIN");
 
 		std::cout << "Client " << client.getNickname() << " successfully joined channel: " << channelName << std::endl;
 	}
 }
+
 
 /*
 void Commands::Join::execute(Client& client, Server& server)

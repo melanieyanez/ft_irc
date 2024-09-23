@@ -20,7 +20,7 @@ Commands::Help::Help(std::vector<std::string> command_parts)
 void Commands::Help::execute(Client& client, Server& server)
 {
 	(void)server;
-    Reply reply;
+	Reply reply;
 
 	if (this->error)
 	{
@@ -32,12 +32,12 @@ void Commands::Help::execute(Client& client, Server& server)
 	{
 		if (this->command.empty())
 		{
-            reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
+			reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 			client.sendMessage(generateLoginHelp(), "client");
-            reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
+			reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
 		}
 		else
-            reply.sendReply(451, client, NULL, NULL, &server, "HELP", "");
+			reply.sendReply(451, client, NULL, NULL, &server, "HELP", "");
 		return;
 	}
 
@@ -47,17 +47,17 @@ void Commands::Help::execute(Client& client, Server& server)
 
 	if (this->command.empty())
 	{
-        reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
+		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 		helpMessage += generateGeneralHelp();
 	}
 	else
 	{
-        reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
+		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 		helpMessage += generateCommandHelp(this->command);
 	}
 
 	client.sendMessage(helpMessage, "client");
-    reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
+	reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
 }
 
 std::string Commands::Help::generateLoginHelp()

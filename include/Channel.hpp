@@ -18,6 +18,7 @@ class Channel
 		bool 					addMember(Client& client);
 		void 					removeMember(Client& client);
 
+		void 					sendMessage(std::string message);
 		void 					sendBack(std::string reply);
 
 		void 					setTopic(std::string topic);
