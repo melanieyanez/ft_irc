@@ -16,8 +16,6 @@ namespace Commands
 		protected:
 
 			std::vector<std::string> 	channels;
-			bool 						error;
-			std::string 				errorMessage;
 	};
 };
 

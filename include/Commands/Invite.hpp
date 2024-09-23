@@ -1,9 +1,10 @@
 #ifndef COMMANDS_INVITE_HPP
 #define COMMANDS_INVITE_HPP
 
+#include "Command.hpp"
+
 #include <vector>
 #include <string>
-#include "Command.hpp"
 
 namespace Commands
 {
@@ -19,8 +20,6 @@ namespace Commands
 
 			std::string 	target;
 			std::string 	channel;
-			bool			error;
-			std::string		errorMessage;
 	};
 }
 

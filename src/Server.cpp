@@ -235,7 +235,7 @@ void Server::handleCommand(std::string command, Client* creator)
 	std::string command_name = command_parts[0];
 	std::transform(command_name.begin(), command_name.end(), command_name.begin(), toupper);
 
-	if (command_parts[0] != "PASS" && command_parts[0] != "NICK" && command_parts[0] != "USER" && !creator->getIsAuthenticated())
+	if (command_parts[0] != "HELP" && command_parts[0] != "PASS" && command_parts[0] != "NICK" && command_parts[0] != "USER" && !creator->getIsAuthenticated())
 	{
 		creator->sendBack("451 " + command_parts[0] + " :You have not registered");
 		return;

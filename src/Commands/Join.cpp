@@ -1,7 +1,8 @@
+#include "Commands/Join.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
-#include "Commands/Join.hpp"
+
 #include <sstream>
 #include <iostream>
 #include <map>

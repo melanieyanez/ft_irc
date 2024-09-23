@@ -1,9 +1,10 @@
 #ifndef COMMANDS_TOPIC_HPP
 #define COMMANDS_TOPIC_HPP
 
+#include "Command.hpp"
+
 #include <vector>
 #include <string>
-#include "Command.hpp"
 
 namespace Commands
 {
@@ -23,8 +24,6 @@ namespace Commands
 			std::string 	channel;
 			std::string 	topic;
 			bool 			isSettingTopic;
-			bool 			error;
-			std::string 	errorMessage;
 	};
 }
 

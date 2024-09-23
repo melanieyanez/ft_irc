@@ -1,5 +1,6 @@
 #include "Commands/Privmsg.hpp"
 #include "Server.hpp"
+
 #include <sstream>
 
 Commands::Privmsg::Privmsg(std::vector<std::string> command_parts)

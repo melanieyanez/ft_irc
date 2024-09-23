@@ -10,6 +10,8 @@ class Command
 		virtual void execute(Client& client, Server& server) = 0;
 
 	protected:
+		bool 		error;
+		std::string	errorMessage;
 
 };
 

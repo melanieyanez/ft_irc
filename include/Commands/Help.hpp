@@ -16,8 +16,7 @@ namespace Commands
 		protected:
 
 			std::string 	command;
-			bool 			error;
-			std::string 	errorMessage;
+			std::string		generateLoginHelp();
 			std::string 	generateGeneralHelp();
 			std::string 	generateCommandHelp(const std::string &command);
 	};

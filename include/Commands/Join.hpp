@@ -1,9 +1,10 @@
 #ifndef COMMANDS_JOIN_HPP
 #define COMMANDS_JOIN_HPP
 
+#include "Command.hpp"
+
 #include <vector>
 #include <string>
-#include "Command.hpp"
 
 namespace Commands
 {
@@ -20,8 +21,6 @@ namespace Commands
 			std::string 				channelName;
 			std::vector<std::string> 	channels;
 			std::vector<std::string> 	keys;
-			bool						error;
-			std::string					errorMessage;
 	};
 
 }

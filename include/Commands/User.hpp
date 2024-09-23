@@ -1,9 +1,10 @@
 #ifndef COMMANDS_USER_HPP
 #define COMMANDS_USER_HPP
 
+#include "Command.hpp"
+
 #include <vector>
 #include <string>
-#include "Command.hpp"
 
 namespace Commands
 {

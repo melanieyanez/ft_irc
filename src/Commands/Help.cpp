@@ -26,18 +26,52 @@ void Commands::Help::execute(Client& client, Server& server)
 		return;
 	}
 
+	if (!client.getIsAuthenticated())
+	{
+		if (this->command.empty())
+		{
+			client.sendBack("704 :Help for: Connection\n", "client");
+			client.sendBack(generateLoginHelp(), "client");
+			client.sendBack("705 :End of HELP", "client");
+		}
+		else
+			client.sendBack("451 HELP :You have not registered", "client");
+		return;
+	}
+
 	std::string helpMessage;
 
-	helpMessage += "Help for: ";
-	helpMessage += (this->command.empty() ? "General" : this->command);
 	helpMessage += "\r\n\r\n";
 
 	if (this->command.empty())
+	{
+		client.sendBack("704 " + client.getNickname() + " :Help for: General", "client");
 		helpMessage += generateGeneralHelp();
+	}
 	else
+	{
+		client.sendBack("704 " + client.getNickname() + " :Help for: " + this->command, "client");
 		helpMessage += generateCommandHelp(this->command);
+	}
 
 	client.sendBack(helpMessage, "client");
+	client.sendBack("705 " + client.getNickname() + " :End of HELP", "client");
+}
+
+std::string Commands::Help::generateLoginHelp()
+{
+	std::string helpMessage;
+
+	helpMessage += "To use IRC commands, you first need to log in.\r\n";
+	helpMessage += "Here are the commands you need to authenticate:\r\n\r\n";
+
+	helpMessage += "PASS <password> - Provide the password for the server.\r\n";
+	helpMessage += "NICK <nickname> - Set your nickname.\r\n";
+	helpMessage += "USER <username> <hostname> <servername> <realname> - Complete your registration.\r\n\r\n";
+
+	helpMessage += "Once you have completed these steps, you will be logged in and able to use all IRC commands.\r\n";
+
+	return helpMessage;
 }
 
 std::string Commands::Help::generateGeneralHelp()
@@ -57,6 +91,7 @@ std::string Commands::Help::generateGeneralHelp()
 	helpMessage += "PART <#channel> - Leaves the specified channel.\r\n";
 	helpMessage += "TOPIC <#channel> [new topic] - Changes or views the topic of a channel.\r\n";
 	helpMessage += "WHO [#channel|nickname] - Lists information about users.\r\n";
+	helpMessage += "WHOIS <nickname> - Displays detailed information about a user.\r\n";
 
 	return helpMessage;
 }
@@ -134,6 +169,12 @@ std::string Commands::Help::generateCommandHelp(const std::string& command)
 	{
 		helpMessage += "WHO [#channel|nickname] - Lists information about users.\r\n";
 		helpMessage += "Usage:\r\n  WHO #channel\r\n  WHO nickname\r\n";
+	}
+	if (command == "WHOIS")
+	{
+		helpMessage += "WHOIS <nickname> - Displays detailed information about a user.\r\n";
+		helpMessage += "Usage:\r\n  WHOIS <nickname>\r\n";
+		helpMessage += "Details:\r\n  The WHOIS command gives detailed information about the specified user, such as their nickname, username, host, and channels they are in.\r\n";
 	}
 	else
 	{

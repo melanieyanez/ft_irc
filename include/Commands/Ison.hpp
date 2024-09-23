@@ -1,9 +1,10 @@
 #ifndef COMMANDS_ISON_HPP
 #define COMMANDS_ISON_HPP
 
+#include "Command.hpp"
+
 #include <vector>
 #include <string>
-#include "Command.hpp"
 
 namespace Commands
 {
@@ -18,8 +19,6 @@ namespace Commands
 		protected:
 
 			std::vector<std::string> 	users;
-			bool 						error;
-			std::string 				errorMessage;
 	};
 }
 

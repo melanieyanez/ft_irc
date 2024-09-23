@@ -1,9 +1,10 @@
 #ifndef COMMANDS_NICK_HPP
 #define COMMANDS_NICK_HPP
 
+#include "Command.hpp"
+
 #include <vector>
 #include <string>
-#include "Command.hpp"
 
 namespace Commands
 {
@@ -18,8 +19,6 @@ namespace Commands
 		protected:
 
 			std::string 	name;
-			bool			error;
-			std::string		errorMessage;
 	};
 }
 

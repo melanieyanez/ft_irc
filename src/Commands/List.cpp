@@ -4,18 +4,21 @@
 
 Commands::List::List(std::vector<std::string> command_parts)
 {
-	this->Param = false;
 	if (command_parts.size() > 1)
-		this->Param = true;
+	{
+		this->error = true;
+		this->errorMessage = "461 LIST :Too many parameters";
+		return;
+	}
+	this->error = false;
 }
 		
 void Commands::List::execute(Client& client, Server& server)
 {
-	if (this->Param)
-	{
-		std::string errorResponse = "461 " + client.getNickname() + " LIST :Too many parameters";
-		client.sendBack(errorResponse, "client");
-		return ;
+	 if (this->error)
+	 {
+		client.sendBack(this->errorMessage, "client");
+		return;
 	}
 
 	std::vector<Channel*> channels = server.getChannels();

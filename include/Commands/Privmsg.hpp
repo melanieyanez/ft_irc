@@ -1,9 +1,10 @@
 #ifndef COMMANDS_PRIVMSG_HPP
 #define COMMANDS_PRIVMSG_HPP
 
+#include "Command.hpp"
+
 #include <vector>
 #include <string>
-#include "Command.hpp"
 
 namespace Commands
 {
@@ -19,8 +20,6 @@ namespace Commands
 
 			std::vector<std::string> 	recipients;
 			std::string 				message;
-			bool						error;
-			std::string					errorMessage;
 			size_t						MAX_MESSAGE_LENGTH;
 	};
 }

@@ -24,8 +24,6 @@ namespace Commands
 			std::string 	channelName;
 			std::string 	nickname;
 			std::string 	reason;
-			bool			error;
-			std::string		errorMessage;
 	};
 }
 

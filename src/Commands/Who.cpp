@@ -4,22 +4,29 @@
 
 Commands::Who::Who(std::vector<std::string> command_parts)
 {
+	if (command_parts.size() > 2)
+	{
+		this->error = true;
+		this->errorMessage = "461 WHO :Too many parameters";
+		return;
+	}
+
+	this->error = false;
+
 	if (command_parts.size() == 1)
 		this->Target = "";
-	else if (command_parts.size() == 2)
-		this->Target = command_parts[1];
 	else
-		this->Target = "ERR_TOO_MANY_PARAMS";
+		this->Target = command_parts[1];
 }
 			
 void Commands::Who::execute(Client& client, Server& server)
 {
-	if (this->Target == "ERR_TOO_MANY_PARAMS")
+	if (this->error)
 	{
-		std::string errorResponse = "461 " + client.getNickname() + " WHO :Too many parameters";
-		client.sendBack(errorResponse, "client");
+		client.sendBack(this->errorMessage, "client");
 		return;
 	}
+
 	else if (this->Target.empty())
 		listConnectedUsers(server, client);
 	else if (this->Target[0] == '#')
