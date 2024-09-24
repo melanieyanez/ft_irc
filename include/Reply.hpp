@@ -23,7 +23,7 @@ class Reply
 		void rplNoTopic(Client &client, Channel &channel);
 		void rplTopic(Client &client, Channel &channel);
 		void rplTopicWhoTime(Channel &channel, Client &client);
-		void rplInviting(Client &client, Channel &channel, Client &target, Server &server);
+		void rplInviting(Client &client, Channel &channel, Client &target);
 		void rplWhoReply(Channel &channel, Client &client);
 		void rplNamReply(Client &client, Channel &channel);
 		void rplEndOfNames(Client &client, Channel &channel);
@@ -35,7 +35,7 @@ class Reply
 		void errNoNickNameGiven(Client &client, std::string command);
 		void errErroneousNickName(Client &client);
 		void errNickNameInUse(Client &client);
-		void errUserNotInChannel(Client &client, Channel &channel);
+		void errUserNotInChannel(Client &client, Channel &channel, Client &target);
 		void errNotOnChannel(Client &client, Channel &channel);
 		void errUserOnChannel(Client &client, Channel &channel, std::string extra);
 		void errNotRegistered(Client &client, std::string command);

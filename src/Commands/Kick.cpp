@@ -1,5 +1,6 @@
 #include "Commands/Kick.hpp"
 #include "Server.hpp"
+#include "Reply.hpp"
 
 Commands::Kick::Kick(std::vector<std::string> command_parts)
 {
@@ -8,7 +9,7 @@ Commands::Kick::Kick(std::vector<std::string> command_parts)
 	if (command_parts.size() < 3)
 	{
 		this->error = true;
-		this->errorMessage = "999 KICK :Invalid number of parameters.";
+		this->errorCode = 461;
 		return;
 	}
 	
@@ -26,7 +27,7 @@ Commands::Kick::Kick(std::vector<std::string> command_parts)
 		else
 		{
 			this->error = true;
-			this->errorMessage = "999 KICK :Invalid number of parameters.";
+			this->errorCode = 461;
 			return;
 		}
 	}
@@ -34,9 +35,11 @@ Commands::Kick::Kick(std::vector<std::string> command_parts)
 
 void Commands::Kick::execute(Client& client, Server& server)
 {
+	Reply reply;
+
 	if (this->error)
 	{
-		client.sendBack(this->errorMessage, "client");
+		reply.sendReply(461, client, NULL, NULL, &server, "KICK");
 		return;
 	}
 
@@ -45,19 +48,19 @@ void Commands::Kick::execute(Client& client, Server& server)
 
 	if (!channel)
 	{
-		client.sendBack("403 " + this->channelName + " :No such channel", "client");
+		reply.sendReply(403, client, NULL, NULL, &server, "KICK", channelName);
 		return;
 	}
 
 	if (!channel->isMember(client))
 	{
-		client.sendBack("442 " + client.getNickname() + " " + channel->getChannelName() + " :You're not on that channel", "client");
+		reply.sendReply(442, client, NULL, channel, &server, "KICK");
 		return;
 	}
 
 	if (!channel->isOperator(client))
 	{
-		client.sendBack("482 " + channel->getChannelName() + " :You're not channel operator", "client");
+		reply.sendReply(482, client, NULL, channel, &server, "KICK");
 		return;
 	}
 
@@ -66,19 +69,19 @@ void Commands::Kick::execute(Client& client, Server& server)
 
 	if (!target)
 	{
-		client.sendBack("401 " + client.getNickname() + " " + this->nickname + " :No such nick/channel", "client");
+		reply.sendReply(401, client, NULL, channel, &server, "KICK", this->nickname);
 		return;
 	}
 
 	// check si la personne est dans le channel
 	if (!channel->isMember(*target))
 	{
-		client.sendBack("441 " + client.getNickname() + " " + this->nickname + " " + this->channelName + " :They aren't on that channel", "client");
+		reply.sendReply(441, client, target, channel, &server, "KICK");
 		return;
 	}
 
 	channel->removeMember(*target);
 
-	target->sendBack("KICK " + this->channelName + " " + this->nickname + " :" + this->reason, "client");
-	channel->sendBack("KICK " + this->channelName + " " + this->nickname + " :" + this->reason);
+	target->sendMessage(":" + client.getFullIdentifier() + " KICK " + channel->getChannelName() + " " + target->getNickname() + " :" + this->reason, "client");
+	channel->sendMessage(":" + client.getFullIdentifier() + " KICK " + channel->getChannelName() + " " + target->getNickname() + " :" + this->reason);
 }

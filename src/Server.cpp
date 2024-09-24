@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "Errors.hpp"
+#include "Reply.hpp"
 #include "Commands/Nick.hpp"
 #include "Commands/User.hpp"
 #include "Commands/Pass.hpp"
@@ -227,6 +228,8 @@ void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int 
 
 void Server::handleCommand(std::string command, Client* creator)
 {
+	Reply reply;
+
 	if (command.empty())
 		return ;
 	std::cout << "User<" << creator << ">: " << command << std::endl;
@@ -237,7 +240,7 @@ void Server::handleCommand(std::string command, Client* creator)
 
 	if (command_parts[0] != "HELP" && command_parts[0] != "PASS" && command_parts[0] != "NICK" && command_parts[0] != "USER" && !creator->getIsAuthenticated())
 	{
-		creator->sendBack("451 " + command_parts[0] + " :You have not registered");
+		reply.sendReply(451, *creator, NULL, NULL, NULL, command_parts[0]);
 		return;
 	}
 

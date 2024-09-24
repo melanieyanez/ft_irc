@@ -47,8 +47,7 @@ std::string Client::getPassword()
 
 std::string Client::getFullIdentifier()
 {
-	// attention : rajouter le host name
-	return nickname + "!" + username + "@" + hostname;
+	return ":" + this->nickname + "!" + this->username + "@" + this->server.getHostname();
 }
 
 bool Client::getIsAuthenticated() const
@@ -131,11 +130,11 @@ void Client::sendBack(std::string reply, std::string target)
 
 void Client::sendMessage(std::string message, std::string target)
 {
-    message += "\r\n";
-    if (target == "client" || target == "both")
-        write(fd, message.c_str(), message.length());
-    if (target == "console" || target == "both")
-        std::cout << message;
+	message += "\r\n";
+	if (target == "client" || target == "both")
+		write(fd, message.c_str(), message.length());
+	if (target == "console" || target == "both")
+		std::cout << message;
 }
 
 void Client::closeConnection() {

@@ -101,7 +101,7 @@ void Commands::Join::execute(Client& client, Server& server)
 			continue;
 		}
 
-		channel->sendMessage(":" + client.getNickname() + "!" + client.getUsername() + "@" + server.getHostname() + " JOIN :" + channel->getChannelName());
+		channel->sendMessage(client.getFullIdentifier() + " JOIN :" + channel->getChannelName());
 		reply.sendReply(353, client, NULL, channel, &server, "JOIN");
 		reply.sendReply(366, client, NULL, channel, &server, "JOIN");
 

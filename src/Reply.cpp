@@ -2,6 +2,7 @@
 
 void Reply::sendReply(int code, Client &client, Client *target, Channel *channel, Server *server, const std::string command, std::string extra)
 {
+	(void)server;
 	switch (code)
 	{
 		case 001: //USED
@@ -13,11 +14,11 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 		case 315:
 			rplEndOfWho(client);
 			break;
-		case 322:
+		case 322: //USED
 			if (channel) 
 				rplList(client, *channel);
 			break;
-		case 323:
+		case 323: //USED
 			rplListEnd(client);
 			break;
 		case 331:
@@ -34,7 +35,7 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 			break;
 		case 341: //USED
 			if (target && channel)
-				rplInviting(client, *channel, *target, *server);
+				rplInviting(client, *channel, *target);
 			break;
 		case 352:
 			if (channel)
@@ -67,9 +68,9 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 		case 433:
 			errNickNameInUse(client);
 			break;
-		case 441:
+		case 441://USED
 			if (channel)
-				errUserNotInChannel(client, *channel);
+				errUserNotInChannel(client, *channel, *target);
 			break;
 		case 442: //USED
 			if (channel)
@@ -139,12 +140,15 @@ void Reply::rplEndOfWho(Client &client)
 
 void Reply::rplList(Client &client, Channel &channel)
 {
-	client.sendBack("322 * " + channel.getChannelName() + " " + std::to_string(channel.getMemberCount()) + " :" + channel.getTopic());
+	std::string topic = channel.getTopic().empty() ? "No topic is set" : channel.getTopic();
+	client.sendMessage("Listing channel: " + channel.getChannelName() + " - No topic is set - Members: " + std::to_string(channel.getMemberCount()), "console");
+	client.sendBack("322 " + client.getNickname() + " " + channel.getChannelName() + " " + std::to_string(channel.getMemberCount()) + " :" + topic, "client");
 }
 
 void Reply::rplListEnd(Client &client)
 {
-	client.sendBack("323 " + client.getNickname() + " :End of /LIST");
+	client.sendMessage("End of /LIST command for client: " + client.getNickname(), "console");
+	client.sendBack("323 " + client.getNickname() + " :End of /LIST", "client");
 }
 
 void Reply::rplNoTopic(Client &client, Channel &channel)
@@ -162,9 +166,9 @@ void Reply::rplTopicWhoTime(Channel &channel, Client &client)
 	client.sendBack("333 * " + channel.getChannelName() + " " + channel.getLastTopicSetter() + " " + channel.getLastTopicSetTime());
 }
 
-void Reply::rplInviting(Client &client, Channel &channel, Client &target, Server &server)
+void Reply::rplInviting(Client &client, Channel &channel, Client &target)
 {
-	target.sendMessage(":" + client.getNickname() + "!" + client.getUsername() + "@" + server.getHostname() + " INVITE " + target.getNickname() + " :" + channel.getChannelName());
+	target.sendMessage(client.getFullIdentifier() + " INVITE " + target.getNickname() + " :" + channel.getChannelName());
 	client.sendBack("341 " + client.getNickname() + " " + target.getNickname() + " :" + channel.getChannelName(), "client");
 }
 
@@ -214,9 +218,9 @@ void Reply::errNickNameInUse(Client &client)
 	client.sendBack("433 " + client.getNickname() + " :Nickname is already in use");
 }
 
-void Reply::errUserNotInChannel(Client &client, Channel &channel)
+void Reply::errUserNotInChannel(Client &client, Channel &channel, Client &target)
 {
-	client.sendBack("441 " + client.getNickname() + " " + channel.getChannelName() + " :They aren't on that channel");
+	client.sendBack("441 " + client.getNickname() + " " + target.getNickname() + " " + channel.getChannelName() + " :They aren't on that channel", "client");
 }
 
 void Reply::errNotOnChannel(Client &client, Channel &channel)
@@ -231,11 +235,13 @@ void Reply::errUserOnChannel(Client &client, Channel &channel, std::string extra
 
 void Reply::errNotRegistered(Client &client, std::string command)
 {
+	client.sendMessage("Error 451: " + command + " - Client " + client.getNickname() + " is not registered", "console");
 	client.sendBack("451 " + client.getNickname() + " " + command + " :You have not registered", "client");
 }
 
 void Reply::errNeedMoreParams(Client &client, std::string command)
 {
+	client.sendMessage("Error 461: " + command + " - Wrong number of parameters for client : " + client.getNickname(), "console");
 	client.sendBack("461 " + client.getNickname() + " " + command + " :Wrong number of parameters", "client");
 }
 

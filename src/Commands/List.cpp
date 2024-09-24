@@ -1,13 +1,16 @@
 #include "Commands/List.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Reply.hpp"
+
+#include <iostream>
 
 Commands::List::List(std::vector<std::string> command_parts)
 {
 	if (command_parts.size() > 1)
 	{
 		this->error = true;
-		this->errorMessage = "461 LIST :Too many parameters";
+		this->errorCode = 461;
 		return;
 	}
 	this->error = false;
@@ -15,21 +18,27 @@ Commands::List::List(std::vector<std::string> command_parts)
 		
 void Commands::List::execute(Client& client, Server& server)
 {
-	 if (this->error)
-	 {
-		client.sendBack(this->errorMessage, "client");
+	Reply reply;
+
+	if (this->error)
+	{
+		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "LIST");
 		return;
 	}
 
+	std::cout << "Executing LIST command for client: " << client.getNickname() << std::endl;
+
 	std::vector<Channel*> channels = server.getChannels();
+	
+	if (channels.empty())
+        std::cout << "No channels available to list." << std::endl;
+
 	for (std::vector<Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
 	{
 		Channel* channel = *it;
 
-		std::string response = "322 " + client.getNickname() + " " + channel->getChannelName() + " " + std::to_string(channel->getMemberCount()) + " :" + (channel->getTopic().empty() ? "No topic set" : channel->getTopic());
-		client.sendBack(response, "client");
+		reply.sendReply(322, client, NULL, channel, &server, "LIST");
 	}
 
-	std::string endResponse = "323 " + client.getNickname() + " :End of /LIST";
-	client.sendBack(endResponse, "client");
+	reply.sendReply(323, client, NULL, NULL, &server, "LIST");
 }
