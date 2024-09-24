@@ -39,13 +39,13 @@ void Commands::Join::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	client.sendMessage("Executing JOIN command for client: " + client.getNickname(), "console");
+
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "JOIN");
 		return;
 	}
-
-	std::cout << "Executing JOIN command for client: " << client.getNickname() << std::endl;
 
 	std::map<std::string, std::string> channelKeyMap;
 
@@ -67,12 +67,12 @@ void Commands::Join::execute(Client& client, Server& server)
 		std::string channelName = it->first;
 		std::string key = it->second;
 
-		std::cout << "Attempting to join channel: " << channelName << " with key: " << key << std::endl;
+		client.sendMessage("Attempting to join channel: " + channelName, "console");
 
 		Channel* channel = server.getChannel(channelName);
 		if (!channel)
 		{
-			std::cout << "Channel not found, creating new channel: " << channelName << std::endl;
+			client.sendMessage( "Channel not found, creating new channel: " + channelName, "console");
 			channel = new Channel(channelName, "");
 			server.addChannel(channel);
 		}
@@ -101,11 +101,11 @@ void Commands::Join::execute(Client& client, Server& server)
 			continue;
 		}
 
-		channel->sendMessage(client.getFullIdentifier() + " JOIN :" + channel->getChannelName());
+		channel->sendMessage(":" + client.getFullIdentifier() + " JOIN :" + channel->getChannelName());
 		reply.sendReply(353, client, NULL, channel, &server, "JOIN");
 		reply.sendReply(366, client, NULL, channel, &server, "JOIN");
 
-		std::cout << "Client " << client.getNickname() << " successfully joined channel: " << channelName << std::endl;
+		client.sendMessage("Client " + client.getNickname() + " successfully joined channel: " + channelName, "console");
 	}
 }
 

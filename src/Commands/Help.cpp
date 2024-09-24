@@ -22,12 +22,14 @@ void Commands::Help::execute(Client& client, Server& server)
 	(void)server;
 	Reply reply;
 
+	client.sendMessage("Executing HELP command for client: " + client.getNickname(), "console");
+
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "HELP", "");
 		return;
 	}
-
+	
 	if (!client.getIsAuthenticated())
 	{
 		if (this->command.empty())
@@ -35,6 +37,7 @@ void Commands::Help::execute(Client& client, Server& server)
 			reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 			client.sendMessage(generateLoginHelp(), "client");
 			reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
+			client.sendMessage("Displayed login help for user: " + client.getNickname(), "console");
 		}
 		else
 			reply.sendReply(451, client, NULL, NULL, &server, "HELP", "");
@@ -49,11 +52,13 @@ void Commands::Help::execute(Client& client, Server& server)
 	{
 		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 		helpMessage += generateGeneralHelp();
+		client.sendMessage("Displayed general help for user: " + client.getNickname(), "console");
 	}
 	else
 	{
 		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 		helpMessage += generateCommandHelp(this->command);
+		client.sendMessage("Displayed help for command: " + this->command + " to user: " + client.getNickname(), "console");
 	}
 
 	client.sendMessage(helpMessage, "client");

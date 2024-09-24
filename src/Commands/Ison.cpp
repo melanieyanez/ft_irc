@@ -28,6 +28,8 @@ void Commands::Ison::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	client.sendMessage("Executing ISON command for client: " + client.getNickname(), "console");
+
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "ISON");

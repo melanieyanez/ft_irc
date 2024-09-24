@@ -20,18 +20,18 @@ void Commands::List::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	client.sendMessage("Executing LIST command for client: " + client.getNickname(), "console");
+
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "LIST");
 		return;
 	}
 
-	std::cout << "Executing LIST command for client: " << client.getNickname() << std::endl;
-
 	std::vector<Channel*> channels = server.getChannels();
 	
 	if (channels.empty())
-        std::cout << "No channels available to list." << std::endl;
+		client.sendMessage("No channels available to list.", "console");
 
 	for (std::vector<Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
 	{

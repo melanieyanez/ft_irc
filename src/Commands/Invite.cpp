@@ -22,6 +22,8 @@ void Commands::Invite::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	client.sendMessage("Executing INVITE command for client: " + client.getNickname(), "console");
+
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "INVITE", "");

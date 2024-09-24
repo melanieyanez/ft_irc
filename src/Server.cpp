@@ -232,8 +232,29 @@ void Server::handleCommand(std::string command, Client* creator)
 
 	if (command.empty())
 		return ;
-	std::cout << "User<" << creator << ">: " << command << std::endl;
 	std::vector<std::string> command_parts = parseCommand(command);
+
+	if (command_parts[0] == "PASS")
+	{
+		size_t passPos = command.find(command_parts[1]);
+		if (passPos != std::string::npos)
+			command.replace(passPos, command_parts[1].length(), std::string(command_parts[1].length(), '*'));
+	}
+	else if (command_parts[0] == "JOIN" && command_parts.size() > 2)
+	{
+		size_t keyPos = command.find(command_parts[2]);
+		if (keyPos != std::string::npos)
+		{
+			std::stringstream keyStream(command_parts[2]);
+			std::string key;
+			while (std::getline(keyStream, key, ','))
+			{
+				command.replace(keyPos, key.length(), std::string(key.length(), '*'));
+				keyPos += key.length() + 1;
+			}
+		}
+	}
+	creator->sendMessage("[" + creator->getFullIdentifier() + "] : " + command, "console");
 
 	std::string command_name = command_parts[0];
 	std::transform(command_name.begin(), command_name.end(), command_name.begin(), toupper);
@@ -327,7 +348,7 @@ void Server::sendMessageToReceiver(std::string receiver, std::string message, Cl
 	{
 		Client* client = *it;
 		if (client->getNickname() == receiver)
-			client->sendBack(sender.getFullIdentifier() + " PRIVMSG " + receiver + " " + message);
+			client->sendBack(":" + sender.getFullIdentifier() + " PRIVMSG " + receiver + " " + message);
 	}
 
 	std::cout << "Server::sendMessageToReceiver: sending to channels " << channels.size() << std::endl;
@@ -338,7 +359,7 @@ void Server::sendMessageToReceiver(std::string receiver, std::string message, Cl
 		if (channel->getChannelName() == receiver)
 		{
 			if (channel->isMember(sender))
-				channel->sendBack(sender.getFullIdentifier() + " PRIVMSG " + receiver + " " + message);
+				channel->sendBack(":" + sender.getFullIdentifier() + " PRIVMSG " + receiver + " " + message);
 		}
 	}
 }

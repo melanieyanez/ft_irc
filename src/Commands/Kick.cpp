@@ -37,6 +37,8 @@ void Commands::Kick::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	client.sendMessage("Executing KICK command for client: " + client.getNickname(), "console");
+
 	if (this->error)
 	{
 		reply.sendReply(461, client, NULL, NULL, &server, "KICK");

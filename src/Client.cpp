@@ -32,11 +32,15 @@ std::string Client::getNickname()
 
 std::string Client::getUsername()
 {
+	if (username.empty())
+		return "*";
 	return username;
 }
 
 std::string Client::getFullname()
 {
+	if (fullname.empty())
+		return "*";
 	return fullname;
 }
 
@@ -47,7 +51,7 @@ std::string Client::getPassword()
 
 std::string Client::getFullIdentifier()
 {
-	return ":" + this->nickname + "!" + this->username + "@" + this->server.getHostname();
+	return this->getNickname() + "!" + this->getUsername() + "@" + this->server.getHostname();
 }
 
 bool Client::getIsAuthenticated() const
