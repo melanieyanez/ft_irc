@@ -5,7 +5,7 @@
 
 #include <sstream>
 
-Commands::Ison::Ison(std::vector<std::string> command_parts) : users()
+Commands::Ison::Ison(const std::vector<std::string> &command_parts) : users()
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() < 2)

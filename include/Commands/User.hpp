@@ -12,7 +12,7 @@ namespace Commands
 	{
 		public:
 
-			User(std::vector<std::string> command_parts);
+			User(const std::vector<std::string> &command_parts);
 
 			virtual void 	execute(Client& client, Server& server);
 

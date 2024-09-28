@@ -13,29 +13,28 @@ class Channel;
 class Server
 {
 	public:
-		Server(std::string port, std::string password);
+		Server(const std::string &port, const std::string &password);
 		~Server();
 
 		void 						start();
 		void 						stop();
 		void 						handleCommand(std::string command, Client* creator);
-		std::string 				getPassword();
+		std::string 				getPassword() const;
 
-		// rajouter pour join
 		void 						addChannel(Channel* channel);
-		Channel* 					getChannel(const std::string& channelName);
+		Channel* 					getChannel(const std::string& channelName) const;
 
-		std::vector<Client*> 		getClients();
-		std::vector<Channel*> 		getChannels();
+		std::vector<Client*> 		getClients() const;
+		std::vector<Channel*> 		getChannels() const;
 
-		void 						sendMessageToReceiver(std::string nickname, std::string message, Client& client);
-		bool 						isNicknameConnected(std::string nickname);
-		Client* 					getClientByNickname(std::string nickname);
+		void 						sendMessageToReceiver(const std::string &nickname, const std::string &message, Client& client);
+		bool 						isNicknameConnected(const std::string &nickname) const;
+		Client* 					getClientByNickname(const std::string &nickname) const;
 
-		std::string 				getHostname();
+		std::string 				getHostname() const;
 
 	protected:
-		std::vector<std::string> 	parseCommand(std::string command);
+		std::vector<std::string> 	parseCommand(std::string &command);
 		void 						removeDisconnectedClient(struct pollfd fds[], int start_index, int clients_number);
 
 	private:

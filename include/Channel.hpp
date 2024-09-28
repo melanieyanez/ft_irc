@@ -14,43 +14,43 @@ class Channel
 
 		Channel(std::string name, std::string password);
 
-		bool 					isMember(Client& client);
-		bool 					addMember(Client& client);
-		void 					removeMember(Client& client);
+		bool 					isMember(Client &client) const;
+		bool 					addMember(Client &client);
+		void 					removeMember(Client &client);
 
-		void 					sendMessage(std::string message);
-		void 					sendBack(std::string reply);
+		void 					sendMessage(std::string message) const;
+		void 					sendBack(std::string reply) const;
 
-		void 					setTopic(std::string topic);
-		void 					setLimits(unsigned int limit);
-		void 					setPassword(std::string password);
-		void 					setInvitationOnly(bool invitationOnly);
-		void					setProtected(bool protection);
-		void 					setTopicRestricted(bool topicRestricted);
-		void 					setLastTopicSetter(std::string nickName);
+		void 					setTopic(const std::string &topic);
+		void 					setLimits(const unsigned int &limit);
+		void 					setPassword(const std::string &password);
+		void 					setInvitationOnly(const bool &invitationOnly);
+		void					setProtected(const bool &protection);
+		void 					setTopicRestricted(const bool &topicRestricted);
+		void 					setLastTopicSetter(const std::string &nickName);
 		void 					setLastTopicSetTime();
 
-		std::string 			getChannelName();
-		std::vector<Client*> 	getMembers();
-		std::string 			getMemberList();
-		std::string 			getTopic();
-		int 					getLimits();
+		std::string 			getChannelName() const;
+		std::vector<Client*> 	getMembers() const;
+		std::string 			getMemberList() const;
+		std::string 			getTopic() const;
+		int 					getLimits() const;
 		unsigned int 			getMemberCount() const;
-		std::string 			getLastTopicSetter();
-		std::string 			getLastTopicSetTime();
+		std::string 			getLastTopicSetter() const;
+		std::string 			getLastTopicSetTime() const;
 
 
 
-		void 					invite(Client& client);
-		bool 					isInvited(Client& client);
-		bool 					isInvitationOnly();
-		bool					isProtected();
-		bool 					isTopicRestricted();
-		bool 					isCorrectKey(std::string key);
+		void 					invite(Client &client);
+		bool 					isInvited(const Client &client) const;
+		bool 					isInvitationOnly() const;
+		bool					isProtected() const;
+		bool 					isTopicRestricted() const;
+		bool 					isCorrectKey(const std::string &key) const;
 
-		bool 					isOperator(Client& client);
-		void 					addOperator(Client& client);
-		void 					removeOperator(Client& client);
+		bool 					isOperator(const Client &client) const;
+		void 					addOperator(Client &client);
+		void 					removeOperator(Client &client);
 
 
 	private:

@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-Commands::Privmsg::Privmsg(std::vector<std::string> command_parts) : message(""), MAX_MESSAGE_LENGTH(400)
+Commands::Privmsg::Privmsg(const std::vector<std::string> &command_parts) : message(""), MAX_MESSAGE_LENGTH(400)
 {
 	// Vérification du nombre de paramètres
 	if (command_parts.size() < 3)

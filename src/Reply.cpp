@@ -1,6 +1,6 @@
 #include "Reply.hpp"
 
-void Reply::sendReply(int code, Client &client, Client *target, Channel *channel, Server *server, const std::string command, std::string extra)
+void Reply::sendReply(const int &code, Client &client, Client *target, Channel *channel, Server *server, const std::string &command, const std::string &extra) const
 {
 	(void)server;
 	switch (code)
@@ -38,7 +38,7 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 				rplInviting(client, *channel, *target);
 			break;
 		case 352:
-			rplWhoReply(channel, client, target, extra);
+			rplWhoReply(*channel, client, *target, extra);
 			break;
 		case 353:
 			if (channel)
@@ -132,72 +132,72 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 	}
 }
 
-void Reply::rplWelcome(Client &client)
+void Reply::rplWelcome(const Client &client) const
 {
 	client.sendMessage("New client connected: " + client.getFullIdentifier(), "console");
 	client.sendBack("001 " + client.getNickname() + " :Welcome to the Internet Relay Network " + client.getNickname() + "!", "client");
 }
 
-void Reply::rplIson(Client &client, std::string extra)
+void Reply::rplIson(const Client &client, const std::string &extra) const
 {
 	client.sendMessage("ISON response for client: " + client.getNickname(), "console");
 	client.sendBack("303 " + client.getNickname() + " :" + extra, "client");
 }
 
-void Reply::rplEndOfWho(Client &client)
+void Reply::rplEndOfWho(const Client &client) const
 {
 	client.sendMessage("End of /WHO list for client: " + client.getNickname(), "console");
 	client.sendBack("315 " + client.getNickname() + " :End of /WHO list.", "client");
 }
 
-void Reply::rplList(Client &client, Channel &channel)
+void Reply::rplList(const Client &client, const Channel &channel) const
 {
 	std::string topic = channel.getTopic().empty() ? "No topic is set" : channel.getTopic();
 	client.sendMessage("Listing channel: " + channel.getChannelName() + " - Topic: " + topic + " - Members: " + std::to_string(channel.getMemberCount()), "console");
 	client.sendBack("322 " + client.getNickname() + " " + channel.getChannelName() + " " + std::to_string(channel.getMemberCount()) + " :" + topic, "client");
 }
 
-void Reply::rplListEnd(Client &client)
+void Reply::rplListEnd(const Client &client) const
 {
 	client.sendMessage("End of /LIST command for client: " + client.getNickname(), "console");
 	client.sendBack("323 " + client.getNickname() + " :End of /LIST", "client");
 }
 
-void Reply::rplNoTopic(Client &client, Channel &channel)
+void Reply::rplNoTopic(const Client &client, const Channel &channel) const
 {
 	client.sendMessage("No topic is set for channel: " + channel.getChannelName(), "console");
 	client.sendBack("331 " + client.getNickname() + " " + channel.getChannelName() + " :No topic is set", "client");
 }
 
-void Reply::rplTopic(Client &client, Channel &channel)
+void Reply::rplTopic(const Client &client, const Channel &channel) const
 {
 	client.sendMessage("Displaying topic for channel: " + channel.getChannelName(), "console");
 	client.sendBack("332 " + client.getNickname() + " " + channel.getChannelName() + " :" + channel.getTopic(), "client");
 }
 
-void Reply::rplTopicWhoTime(Channel &channel, Client &client)
+void Reply::rplTopicWhoTime(const Channel &channel, const Client &client) const
 {
 	client.sendMessage("Topic last changed in channel: " + channel.getChannelName() + " by " + channel.getLastTopicSetter(), "console");
 	client.sendBack("333 " + client.getNickname() + " " + channel.getChannelName() + " " + channel.getLastTopicSetter() + " " + channel.getLastTopicSetTime(), "client");
 }
 
-void Reply::rplInviting(Client &client, Channel &channel, Client &target)
+void Reply::rplInviting(const Client &client, const Channel &channel, const Client &target) const
 {
 	client.sendMessage("Success: Client " + client.getNickname() + " invited " + target.getNickname() + " to channel " + channel.getChannelName(), "console");
 	target.sendMessage(":" + client.getFullIdentifier() + " INVITE " + target.getNickname() + " :" + channel.getChannelName());
 	client.sendBack("341 " + client.getNickname() + " " + target.getNickname() + " :" + channel.getChannelName(), "client");
 }
 
-void Reply::rplWhoReply(Channel *channel, Client &client, Client *target, std::string extra)
+void Reply::rplWhoReply(const Channel &channel, const Client &client, const Client &target, const std::string &extra) const
 {
  	std::string response;
 	
-	if (extra == "channel" && target && channel)
-		response = "352 " + client.getNickname() + " " + channel->getChannelName() + " " + target->getNickname() + " :" + target->getFullname();
-	else if (extra == "user" && target)
-		response = "352 " + client.getNickname() + " * " + target->getNickname() + " :" + target->getFullname();
-	else if (extra == "server" && target)
-		response = "352 " + client.getNickname() + " * " + target->getNickname() + " :" + target->getFullname();
+	if (extra == "channel")
+		response = "352 " + client.getNickname() + " " + channel.getChannelName() + " " + target.getNickname() + " :" + target.getFullname();
+	else if (extra == "user")
+		response = "352 " + client.getNickname() + " * " + target.getNickname() + " :" + target.getFullname();
+	else if (extra == "server")
+		response = "352 " + client.getNickname() + " * " + target.getNickname() + " :" + target.getFullname();
 	else
 	{
 		client.sendMessage("WHO reply error - Invalid parameters", "console");
@@ -206,151 +206,151 @@ void Reply::rplWhoReply(Channel *channel, Client &client, Client *target, std::s
 	client.sendBack(response, "client");
 }
 
-void Reply::rplNamReply(Client &client, Channel &channel)
+void Reply::rplNamReply(const Client &client, const Channel &channel) const
 {
 	client.sendMessage("Listing members of channel: " + channel.getChannelName(), "console");
 	client.sendBack("353 " + client.getNickname() + " = " + channel.getChannelName() + " :" + channel.getMemberList(), "client");
 }
 
-void Reply::rplEndOfNames(Client &client, Channel &channel)
+void Reply::rplEndOfNames(const Client &client, const Channel &channel) const
 {
 	client.sendMessage("End of /NAMES list for channel: " + channel.getChannelName(), "console");
 	client.sendBack("366 " + client.getNickname() + " " + channel.getChannelName() + " :End of /NAMES list.", "client");
 }
 
-void Reply::errNoSuchNick(Client &client, std::string extra, std::string command)
+void Reply::errNoSuchNick(const Client &client, const std::string &extra, const std::string &command) const
 {
 	client.sendMessage("Error 401: " + command + " - Client " + extra + " does not exist or is not connected", "console");
 	client.sendBack("401 " + client.getNickname() + " " + extra + " :No such nick/channel", "client");
 }
 
-void Reply::errNoSuchChannel(Client &client, std::string command, std::string extra)
+void Reply::errNoSuchChannel(const Client &client, const std::string &command, const std::string &extra) const
 {
 	client.sendMessage("Error 403: " + command + " - Channel " + extra + " - No such channel", "console");
 	client.sendBack("403 " + client.getNickname() + " " + extra + " :No such channel", "client");
 }
 
-void Reply::errCannotSendToChan(Channel &channel, Client &client, std::string command)
+void Reply::errCannotSendToChan(const Channel &channel, const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 404: " + command + " - Cannot send to channel: " + channel.getChannelName(), "console");
 	client.sendBack("404 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot send to channel", "client");
 }
 
-void Reply::errNoNickNameGiven(Client &client, std::string command)
+void Reply::errNoNickNameGiven(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 431: " + command + " - No nickname given", "console");
 	client.sendBack("431 " + client.getNickname() + " :No nickname given", "client");
 }
 
-void Reply::errErroneousNickName(Client &client, std::string command)
+void Reply::errErroneousNickName(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 432: " + command + " - Erroneous nickname", "console");
 	client.sendBack("432 " + client.getNickname() + " :Erroneous nickname", "client");
 }
 
-void Reply::errNickNameInUse(Client &client, std::string command)
+void Reply::errNickNameInUse(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 433: " + command + " - Nickname is already in use", "console");
 	client.sendBack("433 " + client.getNickname() + " :Nickname is already in use", "client");
 }
 
-void Reply::errUserNotInChannel(Client &client, Channel &channel, Client &target, std::string command)
+void Reply::errUserNotInChannel(const Client &client, const Channel &channel, const Client &target, const std::string &command) const
 {
 	client.sendMessage("Error 441: " + command + " - Client " + target.getNickname() + " is not in channel " + channel.getChannelName(), "console");
 	client.sendBack("441 " + client.getNickname() + " " + target.getNickname() + " " + channel.getChannelName() + " :They aren't on that channel", "client");
 }
 
-void Reply::errNotOnChannel(Client &client, Channel &channel, std::string command)
+void Reply::errNotOnChannel(const Client &client, const Channel &channel, const std::string &command) const
 {
 	client.sendMessage("Error 442: " + command + " - Client " + client.getNickname() + " is not a member of channel " + channel.getChannelName(), "console");
 	client.sendBack("442 " + client.getNickname() + " " + channel.getChannelName() + " :You're not on that channel", "client");
 }
 
-void Reply::errUserOnChannel(Client &client, Channel &channel, std::string extra, std::string command)
+void Reply::errUserOnChannel(const Client &client, const Channel &channel, const std::string &extra, const std::string &command) const
 {
 	client.sendMessage("Error 443: " + command + " - Client " + extra + " is already in channel " + channel.getChannelName(), "console");
 	client.sendBack("443 " + client.getNickname() + " " + extra + " " + channel.getChannelName() + " :is already on channel", "client");
 }
 
-void Reply::errNotRegistered(Client &client, std::string command)
+void Reply::errNotRegistered(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 451: " + command + " - Client " + client.getNickname() + " is not registered", "console");
 	client.sendBack("451 " + client.getNickname() + " " + command + " :You have not registered", "client");
 }
 
-void Reply::errNeedMoreParams(Client &client, std::string command)
+void Reply::errNeedMoreParams(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 461: " + command + " - Wrong number of parameters for client: " + client.getNickname(), "console");
 	client.sendBack("461 " + client.getNickname() + " " + command + " :Wrong number of parameters", "client");
 }
 
-void Reply::errAlreadyRegistered(Client &client, std::string command)
+void Reply::errAlreadyRegistered(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 462: " + command + " - Client " + client.getNickname() + " is already registered", "console");
 	client.sendBack("462 " + client.getNickname() + " " + command + " :You may not reregister", "client");
 }
 
-void Reply::errPasswordMismatch(Client &client, std::string command)
+void Reply::errPasswordMismatch(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 464: " + command + " - Password mismatch for client: " + client.getNickname(), "console");
 	client.sendBack("464 " + client.getNickname() + " :Password incorrect", "client");
 }
 
-void Reply::errChannelKeyAlreadySet(Client &client, Channel &channel)
+void Reply::errChannelKeyAlreadySet(const Client &client, const Channel &channel) const
 {
 	client.sendMessage("Error 467: Channel key already set for channel " + channel.getChannelName(), "console");
 	client.sendBack("467 " + client.getNickname() + " " + channel.getChannelName() + " :Channel key already set", "client");
 }
 
-void Reply::errChannelIsFull(Client &client, Channel &channel, std::string command)
+void Reply::errChannelIsFull(const Client &client, const Channel &channel, const std::string &command) const
 {
 	client.sendMessage("Error 471: " + command + " - Channel " + channel.getChannelName() + " is full", "console");
 	client.sendBack("471 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+l) - Channel is full", "client");
 }
 
-void Reply::errInvalidMode(Client &client, Channel &channel, const std::string command)
+void Reply::errInvalidMode(const Client &client, const Channel &channel, const std::string &command) const
 {
 	client.sendMessage("Error 472: Unknown mode " + command + " on channel " + channel.getChannelName(), "console");
 	client.sendBack("472 " + client.getNickname() + " " + command + " :Unknown mode flag", "client");
 }
 
-void Reply::errInviteOnlyChan(Client &client, Channel &channel, std::string command)
+void Reply::errInviteOnlyChan(const Client &client, const Channel &channel, const std::string &command) const
 {
 	client.sendMessage("Error 473: " + command + " - Channel " + channel.getChannelName() + " is invite-only", "console");
 	client.sendBack("473 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+i) - You are not invited", "client");
 }
 
-void Reply::errBadChannelKey(Client &client, Channel &channel, std::string command)
+void Reply::errBadChannelKey(const Client &client, const Channel &channel, const std::string &command) const
 {
 	client.sendMessage("Error 475: " + command + " - Wrong key for channel " + channel.getChannelName(), "console");
 	client.sendBack("475 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+k) - Wrong key", "client");
 }
 
-void Reply::errBadChannelMask(Client &client, const std::string &channel)
+void Reply::errBadChannelMask(const Client &client, const std::string &channel) const
 {
 	client.sendMessage("Error 476: Invalid channel name " + channel, "console");
 	client.sendBack("476 " + client.getNickname() + " " + channel + " :Invalid channel name", "client");
 }
 
-void Reply::errChanOpPrivsNeeded(Channel &channel, Client &client, std::string command)
+void Reply::errChanOpPrivsNeeded(const Channel &channel, const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 482: " + command + " - Client " + client.getNickname() + " does not have operator privileges in channel " + channel.getChannelName(), "console");
 	client.sendBack("482 " + client.getNickname() + " " + channel.getChannelName() + " :You're not channel operator", "client");
 }
 
-void Reply::rplHelpStart(Client &client, const std::string command)
+void Reply::rplHelpStart(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Start of help message for command: " + command, "console");
 	client.sendBack("704 " + client.getNickname() + " " + command + " :Start of help message", "client");
 }
 
-void Reply::rplEndOfHelp(Client &client, const std::string command)
+void Reply::rplEndOfHelp(const Client &client, const std::string &command) const
 {
 	client.sendMessage("End of help message for command: " + command, "console");
 	client.sendBack("705 " + client.getNickname() + " " + command + " :End of help message", "client");
 }
 
-void Reply::errUnknownCommand(Client &client, const std::string command)
+void Reply::errUnknownCommand(const Client &client, const std::string &command) const
 {
 	client.sendMessage("Error 999: " + command + " - Unknown command", "console");
 	client.sendBack("999 " + client.getNickname() + " " + command + " :Unknown command", "client");

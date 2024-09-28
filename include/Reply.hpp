@@ -11,46 +11,46 @@ class Reply
 {
 	public:
 
-		void sendReply(int code, Client &client, Client *target, Channel *channel = NULL, Server *server = NULL, const std::string command = "", const std::string extra = "");
+		void sendReply(const int &code, Client &client, Client *target, Channel *channel = NULL, Server *server = NULL, const std::string &command = "", const std::string &extra = "")  const;
 
 	private:
 
-		void rplWelcome(Client &client);
-		void rplIson(Client &client, std::string extra);
-		void rplEndOfWho(Client &client);
-		void rplList(Client &client, Channel &channel);
-		void rplListEnd(Client &client);
-		void rplNoTopic(Client &client, Channel &channel);
-		void rplTopic(Client &client, Channel &channel);
-		void rplTopicWhoTime(Channel &channel, Client &client);
-		void rplInviting(Client &client, Channel &channel, Client &target);
-		void rplWhoReply(Channel *channel, Client &client, Client *target, std::string command);
-		void rplNamReply(Client &client, Channel &channel);
-		void rplEndOfNames(Client &client, Channel &channel);
-		void rplHelpStart(Client &client, const std::string command);
-		void rplEndOfHelp(Client &client, const std::string command);
+		void rplWelcome(const Client &client) const;
+		void rplIson(const Client &client, const std::string &extra) const;
+		void rplEndOfWho(const Client &client) const;
+		void rplList(const Client &client, const Channel &channel) const;
+		void rplListEnd(const Client &client) const;
+		void rplNoTopic(const Client &client, const Channel &channel) const;
+		void rplTopic(const Client &client, const Channel &channel) const;
+		void rplTopicWhoTime(const Channel &channel, const Client &client) const;
+		void rplInviting(const Client &client, const Channel &channel, const Client &target) const;
+		void rplWhoReply(const Channel &channel, const Client &client, const Client &target, const std::string &command) const;
+		void rplNamReply(const Client &client, const Channel &channel) const;
+		void rplEndOfNames(const Client &client, const Channel &channel) const;
+		void rplHelpStart(const Client &client, const std::string &command) const;
+		void rplEndOfHelp(const Client &client, const std::string &command) const;
 
-		void errNoSuchNick(Client &client, std::string extra, std::string command);
-		void errNoSuchChannel(Client &client, std::string command, std::string extra);
-		void errCannotSendToChan(Channel &channel, Client &client, std::string command);
-		void errNoNickNameGiven(Client &client, std::string command);
-		void errErroneousNickName(Client &client, std::string command);
-		void errNickNameInUse(Client &client, std::string command);
-		void errUserNotInChannel(Client &client, Channel &channel, Client &target, std::string command);
-		void errNotOnChannel(Client &client, Channel &channel, std::string command);
-		void errUserOnChannel(Client &client, Channel &channel, std::string extra, std::string command);
-		void errNotRegistered(Client &client, std::string command);
-		void errNeedMoreParams(Client &client, std::string command);
-		void errAlreadyRegistered(Client &client, std::string command);
-		void errPasswordMismatch(Client &client, std::string command);
-		void errChannelKeyAlreadySet(Client &client, Channel &channel);
-		void errChannelIsFull(Client &client, Channel &channel, std::string command);
-		void errInvalidMode(Client &client, Channel &channel, const std::string command);
-		void errInviteOnlyChan(Client &client, Channel &channel, std::string command);
-		void errBadChannelKey(Client &client, Channel &channel, std::string command);
-		void errBadChannelMask(Client &client, const std::string &channel);
-		void errChanOpPrivsNeeded(Channel &channel, Client &client, std::string command);
-		void errUnknownCommand(Client &client, const std::string command);
+		void errNoSuchNick(const Client &client, const std::string &extra, const std::string &command) const;
+		void errNoSuchChannel(const Client &client, const std::string &command, const std::string &extra) const;
+		void errCannotSendToChan(const Channel &channel, const Client &client, const std::string &command) const;
+		void errNoNickNameGiven(const Client &client, const std::string &command) const;
+		void errErroneousNickName(const Client &client, const std::string &command) const;
+		void errNickNameInUse(const Client &client, const std::string &command) const;
+		void errUserNotInChannel(const Client &client, const Channel &channel, const Client &target, const std::string &command) const;
+		void errNotOnChannel(const Client &client, const Channel &channel, const std::string &command) const;
+		void errUserOnChannel(const Client &client, const Channel &channel, const std::string &extra, const std::string &command) const;
+		void errNotRegistered(const Client &client, const std::string &command) const;
+		void errNeedMoreParams(const Client &client, const std::string &command) const;
+		void errAlreadyRegistered(const Client &client, const std::string &command) const;
+		void errPasswordMismatch(const Client &client, const std::string &command) const;
+		void errChannelKeyAlreadySet(const Client &client, const Channel &channel) const;
+		void errChannelIsFull(const Client &client, const Channel &channel, const std::string &command) const;
+		void errInvalidMode(const Client &client, const Channel &channel, const std::string &command) const;
+		void errInviteOnlyChan(const Client &client, const Channel &channel, const std::string &command) const;
+		void errBadChannelKey(const Client &client, const Channel &channel, const std::string &command) const;
+		void errBadChannelMask(const Client &client, const std::string &channel) const;
+		void errChanOpPrivsNeeded(const Channel &channel, const Client &client, const std::string &command) const;
+		void errUnknownCommand(const Client &client, const std::string &command) const;
 };
 
 #endif

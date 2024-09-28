@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-Commands::Pass::Pass(std::vector<std::string> command_parts) : password("")
+Commands::Pass::Pass(const std::vector<std::string> &command_parts) : password("")
 {
 	// Vérification du nombre de paramètres
 	if (command_parts.size() != 2)

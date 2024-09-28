@@ -5,7 +5,7 @@
 
 #include <sstream>
 
-Commands::Part::Part(std::vector<std::string> command_parts) : channels()
+Commands::Part::Part(const std::vector<std::string> &command_parts) : channels()
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() != 2)

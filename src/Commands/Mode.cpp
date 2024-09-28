@@ -2,7 +2,7 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Mode::Mode(std::vector<std::string> command_parts) : channelName(""), mode(""), extraParam("")
+Commands::Mode::Mode(const std::vector<std::string> &command_parts) : channelName(""), mode(""), extraParam("")
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() < 3)

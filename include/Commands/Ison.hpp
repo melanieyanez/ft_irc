@@ -12,7 +12,7 @@ namespace Commands
 	{
 		public:
 
-			Ison(std::vector<std::string> command_parts);
+			Ison(const std::vector<std::string> &command_parts);
 			
 			virtual void 				execute(Client& client, Server& server);
 

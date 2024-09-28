@@ -27,7 +27,7 @@
 #include <sstream>
 
 // Constructeur de la classe Server, initialisant le port et le mot de passe du serveur
-Server::Server(std::string port, std::string password) : port(port), password(password), fd(-1), channelName(""), hostname(""), stopRequested(false)
+Server::Server(const std::string &port, const std::string &password) : port(port), password(password), fd(-1), channelName(""), hostname(""), stopRequested(false)
 {
 	// Préparation de l'initialisation du socket avec les informations sur l'adresse et le port
 	struct addrinfo hints;
@@ -301,7 +301,7 @@ void Server::handleCommand(std::string command, Client* creator)
 }
 
 // Fonction pour analyser la commande et la diviser en plusieurs parties
-std::vector<std::string> Server::parseCommand(std::string command)
+std::vector<std::string> Server::parseCommand(std::string &command)
 {
 	std::string::size_type space_pos;
 	std::string command_part;
@@ -319,23 +319,23 @@ std::vector<std::string> Server::parseCommand(std::string command)
 	return command_parts;
 }
 
-std::string Server::getPassword()
+std::string Server::getPassword() const
 {
 	return this->password;
 }
 
-std::vector<Client*> Server::getClients()
+std::vector<Client*> Server::getClients() const
 {
 	return this->clients;
 }
 
-std::vector<Channel*> Server::getChannels()
+std::vector<Channel*> Server::getChannels() const
 {
 	return this->channels;
 }
 
 // Fonction pour envoyer un message à un destinataire (client ou canal)
-void Server::sendMessageToReceiver(std::string receiver, std::string message, Client& sender)
+void Server::sendMessageToReceiver(const std::string &receiver, const std::string &message, Client& sender)
 {
 	// Envoi du message aux clients
 	std::cout << "Server::sendMessageToReceiver: sending to clients "  << clients.size() << std::endl;
@@ -359,9 +359,9 @@ void Server::sendMessageToReceiver(std::string receiver, std::string message, Cl
 	}
 }
 
-bool Server::isNicknameConnected(std::string nickname)
+bool Server::isNicknameConnected(const std::string &nickname) const
 {
-	for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+	for (std::vector<Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 	{
 		Client* client = *it;
 		if (client->getNickname() == nickname)
@@ -370,9 +370,9 @@ bool Server::isNicknameConnected(std::string nickname)
 	return false;
 }
 
-Channel* Server::getChannel(const std::string& channelName)
+Channel* Server::getChannel(const std::string& channelName) const
 {
-	for (std::vector<Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
+	for (std::vector<Channel*>::const_iterator it = channels.begin(); it != channels.end(); ++it)
 	{
 		if ((*it)->getChannelName() == channelName)
 		{
@@ -387,9 +387,9 @@ void Server::addChannel(Channel* channel)
 	channels.push_back(channel);
 }
 
-Client* Server::getClientByNickname(std::string nickname)
+Client* Server::getClientByNickname(const std::string &nickname) const
 {
-	for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+	for (std::vector<Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 	{
 		if ((*it)->getNickname() == nickname)
 		{
@@ -399,7 +399,7 @@ Client* Server::getClientByNickname(std::string nickname)
 	return NULL;
 }
 
-std::string Server::getHostname()
+std::string Server::getHostname() const
 {
 	return hostname;
 }

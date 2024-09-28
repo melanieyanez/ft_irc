@@ -3,7 +3,7 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Who::Who(std::vector<std::string> command_parts) : Target("")
+Commands::Who::Who(const std::vector<std::string> &command_parts) : Target("")
 {
 	// Vérification du nombre de paramètres
 	if (command_parts.size() > 2)
@@ -42,7 +42,7 @@ void Commands::Who::execute(Client& client, Server& server)
 		listSpecificUser(server, client, this->Target);
 }
 
-void Commands::Who::listConnectedUsers(Server &server, Client &client)
+void Commands::Who::listConnectedUsers(Server &server, Client &client) const
 {
 	Reply reply;
 
@@ -61,7 +61,7 @@ void Commands::Who::listConnectedUsers(Server &server, Client &client)
 	reply.sendReply(315, client, NULL, NULL, &server, "WHO");
 }
  			
-void Commands::Who::listUsersInChannel(Server &server, Client &client, const std::string &channelName)
+void Commands::Who::listUsersInChannel(Server &server, Client &client, const std::string &channelName) const
 {
 	Reply reply;
 
@@ -93,7 +93,7 @@ void Commands::Who::listUsersInChannel(Server &server, Client &client, const std
 	}
 }
 			
-void Commands::Who::listSpecificUser(Server &server, Client &client, const std::string &nickName)
+void Commands::Who::listSpecificUser(Server &server, Client &client, const std::string &nickName) const
 {
 	Reply reply;
 

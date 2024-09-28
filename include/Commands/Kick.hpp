@@ -15,7 +15,7 @@ namespace Commands
 	{
 		public:
 
-			Kick(std::vector<std::string> command_parts);
+			Kick(const std::vector<std::string> &command_parts);
 			
 			virtual void 	execute(Client& client, Server& server);
 

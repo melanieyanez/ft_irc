@@ -3,7 +3,7 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Help::Help(std::vector<std::string> command_parts) : command("")
+Commands::Help::Help(const std::vector<std::string> &command_parts) : command("")
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() > 2)
@@ -74,7 +74,7 @@ void Commands::Help::execute(Client& client, Server& server)
 	reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
 }
 
-std::string Commands::Help::generateLoginHelp()
+std::string Commands::Help::generateLoginHelp() const
 {
 	std::string helpMessage;
 
@@ -90,7 +90,7 @@ std::string Commands::Help::generateLoginHelp()
 	return helpMessage;
 }
 
-std::string Commands::Help::generateGeneralHelp()
+std::string Commands::Help::generateGeneralHelp() const
 {
 	std::string helpMessage;
 
@@ -111,7 +111,7 @@ std::string Commands::Help::generateGeneralHelp()
 	return helpMessage;
 }
 
-std::string Commands::Help::generateCommandHelp(const std::string& command)
+std::string Commands::Help::generateCommandHelp(const std::string& command) const
 {
 	std::string helpMessage;
 

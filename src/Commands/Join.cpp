@@ -7,7 +7,7 @@
 #include <iostream>
 #include <map>
 
-Commands::Join::Join(std::vector<std::string> command_parts) : channelName(""), channels(), keys()
+Commands::Join::Join(const std::vector<std::string> &command_parts) : channelName(""), channels(), keys()
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() < 2)

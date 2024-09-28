@@ -1,7 +1,7 @@
 #include "Commands/Nick.hpp"
 #include "Reply.hpp"
 
-Commands::Nick::Nick(std::vector<std::string> command_parts) : name("")
+Commands::Nick::Nick(const std::vector<std::string> &command_parts) : name("")
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() != 2)

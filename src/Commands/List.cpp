@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-Commands::List::List(std::vector<std::string> command_parts)
+Commands::List::List(const std::vector<std::string> &command_parts)
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() > 1)

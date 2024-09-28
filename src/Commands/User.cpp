@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-Commands::User::User(std::vector<std::string> command_parts) : name(""), fullname("")
+Commands::User::User(const std::vector<std::string> &command_parts) : name(""), fullname("")
 {	
 	// Vérification du nombre de paramètres
 	if (command_parts.size() < 5)

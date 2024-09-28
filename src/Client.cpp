@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 
-Client::Client(Server& server, int fd, std::string hostname) : nickname(""), username(""), fullname(""), password(""), fd(fd), isAuthenticated(false), line(""), server(server), hostname(hostname){}
+Client::Client(Server& server, int fd, const std::string &hostname) : nickname(""), username(""), fullname(""), password(""), fd(fd), isAuthenticated(false), line(""), server(server), hostname(hostname){}
 
 Client::~Client()
 {
@@ -14,33 +14,33 @@ Client::~Client()
 		std::cout << "Client<" << this << ">::~Client: closed failed " << errno << std::endl;
 }
 
-std::string Client::getNickname()
+std::string Client::getNickname() const
 {
 	if (nickname.empty())
 		return "*";
 	return nickname;
 }
 
-std::string Client::getUsername()
+std::string Client::getUsername() const
 {
 	if (username.empty())
 		return "*";
 	return username;
 }
 
-std::string Client::getFullname()
+std::string Client::getFullname() const
 {
 	if (fullname.empty())
 		return "*";
 	return fullname;
 }
 
-std::string Client::getPassword()
+std::string Client::getPassword() const
 {
 	return password;
 }
 
-std::string Client::getFullIdentifier()
+std::string Client::getFullIdentifier() const
 {
 	return this->getNickname() + "!" + this->getUsername() + "@" + this->server.getHostname();
 }
@@ -60,22 +60,22 @@ bool Client::hasPass() const
 	return !this->password.empty();
 }
 
-void Client::setNickname(std::string nickname)
+void Client::setNickname(const std::string &nickname)
 {
 	this->nickname = nickname;
 }
 
-void Client::setUsername(std::string username)
+void Client::setUsername(const std::string &username)
 {
 	this->username = username;
 }
 
-void Client::setFullname(std::string fullname)
+void Client::setFullname(const std::string &fullname)
 {
 	this->fullname = fullname;
 }
 
-void Client::setPassword(std::string password)
+void Client::setPassword(const std::string &password)
 {
 	this->password = password;
 }
@@ -116,7 +116,7 @@ std::string Client::readNextPacket()
 	return "";
 }
 
-void Client::sendBack(std::string reply, std::string target)
+void Client::sendBack(std::string reply, std::string target) const
 {
 	reply += "\r\n";
 	reply = ":" + server.getHostname() + " " + reply;
@@ -126,7 +126,7 @@ void Client::sendBack(std::string reply, std::string target)
 		std::cout << reply;
 }
 
-void Client::sendMessage(std::string message, std::string target)
+void Client::sendMessage(std::string message, std::string target) const
 {
 	message += "\r\n";
 	if (target == "client" || target == "both")

@@ -9,16 +9,16 @@ namespace Commands
 	{
 		public:
 
-			Help(std::vector<std::string> command_parts);
+			Help(const std::vector<std::string> &command_parts);
 			
 			virtual void 	execute(Client& client, Server& server);
 
 		protected:
 
 			std::string 	command;
-			std::string		generateLoginHelp();
-			std::string 	generateGeneralHelp();
-			std::string 	generateCommandHelp(const std::string &command);
+			std::string		generateLoginHelp() const;
+			std::string 	generateGeneralHelp() const;
+			std::string 	generateCommandHelp(const std::string &command) const;
 	};
 };
 

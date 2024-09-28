@@ -12,7 +12,7 @@ namespace Commands
 	{
 		public:
 
-			Privmsg(std::vector<std::string> command_parts);
+			Privmsg(const std::vector<std::string> &command_parts);
 			
 			virtual void 				execute(Client& client, Server& server);
 
