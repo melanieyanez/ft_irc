@@ -33,7 +33,7 @@ void Commands::Part::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "PART");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "PART");
 		return;
 	}
 
@@ -44,7 +44,7 @@ void Commands::Part::execute(Client& client, Server& server)
 		// Vérification si le nom de channel commence par '#'
 		if (channel_name[0] != '#')
 		{
-			reply.sendReply(476, client, NULL, NULL, &server, "PART", channel_name);
+			reply.sendReply(476, client, NULL, NULL, "PART", channel_name);
 			continue;
 		}
 		
@@ -54,14 +54,14 @@ void Commands::Part::execute(Client& client, Server& server)
 		// Vérification si le canal existe
 		if (!channel) 
 		{
-			reply.sendReply(403, client, NULL, NULL, &server, "PART", channel_name);
+			reply.sendReply(403, client, NULL, NULL, "PART", channel_name);
 			continue;
 		}
 
 		// Vérification si le client est membre du channel
 		if (!channel->isMember(client)) 
 		{
-			reply.sendReply(442, client, NULL, channel, &server, "PART", "");
+			reply.sendReply(442, client, NULL, channel, "PART", "");
 			continue;
 		}
 

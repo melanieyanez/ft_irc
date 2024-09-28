@@ -28,7 +28,7 @@ void Commands::Who::execute(Client& client, Server& server)
 	// Gestion des erreurs détectées lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "WHO");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "WHO");
 		return;
 	}
 	// Si aucune cible n'est spécifiée, lister tous les utilisateurs connectés
@@ -55,10 +55,10 @@ void Commands::Who::listConnectedUsers(Server &server, Client &client) const
 		Client* connectedClient = *it;
 		// Format de la réponse pour chaque utilisateur connecté
 		if (connectedClient != NULL)
-			reply.sendReply(352, client, connectedClient, NULL, &server, "WHO", "server");
+			reply.sendReply(352, client, connectedClient, NULL, "WHO", "server");
 	}
 	// Message de fin de la commande /WHO
-	reply.sendReply(315, client, NULL, NULL, &server, "WHO");
+	reply.sendReply(315, client, NULL, NULL, "WHO");
 }
  			
 void Commands::Who::listUsersInChannel(Server &server, Client &client, const std::string &channelName) const
@@ -80,16 +80,16 @@ void Commands::Who::listUsersInChannel(Server &server, Client &client, const std
 			// Format de la réponse pour chaque membre du canal
 			if (channelClient != NULL)
 			{
-				reply.sendReply(352, client, channelClient, channel, &server, "WHO", "channel");
+				reply.sendReply(352, client, channelClient, channel, "WHO", "channel");
 			}
 		}
 		// Message de fin de la commande /WHO pour ce canal
-		reply.sendReply(315, client, NULL, NULL, &server, "WHO", channelName);
+		reply.sendReply(315, client, NULL, NULL, "WHO", channelName);
 	}
 	else
 	{
 		// Si le canal n'existe pas
-		reply.sendReply(403, client, NULL, NULL, &server, "WHO", channelName);
+		reply.sendReply(403, client, NULL, NULL, "WHO", channelName);
 	}
 }
 			
@@ -104,13 +104,13 @@ void Commands::Who::listSpecificUser(Server &server, Client &client, const std::
 	{
 		client.sendMessage("WHO reply for user: " + specificClient->getNickname() + " - Client: " + client.getNickname(), "console");
 		// Format de la réponse pour l'utilisateur spécifique
-		reply.sendReply(352, client, specificClient, NULL, &server, "WHO", "user");
+		reply.sendReply(352, client, specificClient, NULL, "WHO", "user");
 	}
 	else
 	{
 		// Si l'utilisateur n'existe pas
-		reply.sendReply(401, client, NULL, NULL, &server, "WHO", nickName);
+		reply.sendReply(401, client, NULL, NULL, "WHO", nickName);
 	}
 	// Message de fin de la commande /WHO pour cet utilisateur
-	reply.sendReply(315, client, NULL, NULL, &server, "WHO");
+	reply.sendReply(315, client, NULL, NULL, "WHO");
 }

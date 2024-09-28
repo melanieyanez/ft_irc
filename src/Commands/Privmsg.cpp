@@ -56,7 +56,7 @@ void Commands::Privmsg::execute(Client& client, Server& server)
 	// Gestion des erreurs détectées lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "PRIVMSG");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "PRIVMSG");
 		return;
 	}
 
@@ -90,14 +90,14 @@ void Commands::Privmsg::execute(Client& client, Server& server)
 			// Vérification si le canal existe
 			if (!channel)
 			{
-				reply.sendReply(403, client, NULL, NULL, &server, "PRIVMSG", recipient);
+				reply.sendReply(403, client, NULL, NULL, "PRIVMSG", recipient);
 				continue;
 			}
 
 			// Vérification si le client est membre du canal
 			if (!channel->isMember(client))
 			{
-				reply.sendReply(404, client, NULL, channel, &server, "PRIVMSG");
+				reply.sendReply(404, client, NULL, channel, "PRIVMSG");
 				continue;
 			}
 			
@@ -114,7 +114,7 @@ void Commands::Privmsg::execute(Client& client, Server& server)
 			// Vérification si le client cible existe
 			if (!target)
 			{
-				reply.sendReply(401, client, NULL, NULL, &server, "PRIVMSG", recipient);
+				reply.sendReply(401, client, NULL, NULL, "PRIVMSG", recipient);
 				continue;
 			}
 

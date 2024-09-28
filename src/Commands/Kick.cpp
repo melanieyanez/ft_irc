@@ -52,7 +52,7 @@ void Commands::Kick::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(461, client, NULL, NULL, &server, "KICK");
+		reply.sendReply(461, client, NULL, NULL, "KICK");
 		return;
 	}
 
@@ -62,21 +62,21 @@ void Commands::Kick::execute(Client& client, Server& server)
 	// Vérification si le canal existe
 	if (!channel)
 	{
-		reply.sendReply(403, client, NULL, NULL, &server, "KICK", channelName);
+		reply.sendReply(403, client, NULL, NULL, "KICK", channelName);
 		return;
 	}
 
 	// Vérification si le client est membre du canal
 	if (!channel->isMember(client))
 	{
-		reply.sendReply(442, client, NULL, channel, &server, "KICK");
+		reply.sendReply(442, client, NULL, channel, "KICK");
 		return;
 	}
 
 	// Vérification si le client est opérateur dans le canal
 	if (!channel->isOperator(client))
 	{
-		reply.sendReply(482, client, NULL, channel, &server, "KICK");
+		reply.sendReply(482, client, NULL, channel, "KICK");
 		return;
 	}
 
@@ -86,14 +86,14 @@ void Commands::Kick::execute(Client& client, Server& server)
 	// Vérification si l'utilisateur cible existe
 	if (!target)
 	{
-		reply.sendReply(401, client, NULL, channel, &server, "KICK", this->nickname);
+		reply.sendReply(401, client, NULL, channel, "KICK", this->nickname);
 		return;
 	}
 
 	// Vérification si l'utilisateur cible est membre du canal
 	if (!channel->isMember(*target))
 	{
-		reply.sendReply(441, client, target, channel, &server, "KICK");
+		reply.sendReply(441, client, target, channel, "KICK");
 		return;
 	}
 

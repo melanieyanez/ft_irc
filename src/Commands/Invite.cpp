@@ -35,7 +35,7 @@ void Commands::Invite::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "INVITE", "");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "INVITE", "");
 		return;
 	}
 
@@ -45,21 +45,21 @@ void Commands::Invite::execute(Client& client, Server& server)
 	// Vérification si le canal existe
 	if (!channel)
 	{
-		reply.sendReply(403, client, NULL, NULL, &server, "INVITE", this->channel);
+		reply.sendReply(403, client, NULL, NULL, "INVITE", this->channel);
 		return;
 	}
 
 	// Vérification si le client est membre du canal
 	if (!channel->isMember(client))
 	{
-		reply.sendReply(442, client, NULL, channel, &server, "INVITE", "");
+		reply.sendReply(442, client, NULL, channel, "INVITE", "");
 		return;
 	}
 
 	// Vérification si le client est opérateur dans le canal
 	if (!channel->isOperator(client))
 	{
-		reply.sendReply(482, client, NULL, channel, &server, "INVITE", "");
+		reply.sendReply(482, client, NULL, channel, "INVITE", "");
 		return;
 	}
 
@@ -69,14 +69,14 @@ void Commands::Invite::execute(Client& client, Server& server)
 	// Vérification si l'utilisateur cible existe
 	if (!target)
 	{
-		reply.sendReply(401, client, target, channel, &server, "INVITE", this->target);
+		reply.sendReply(401, client, target, channel, "INVITE", this->target);
 		return;
 	}
 
 	// Vérification si l'utilisateur cible est déjà membre du canal
 	if (channel->isMember(*target))
 	{
-		reply.sendReply(443, client, NULL, channel, &server, "INVITE", target->getNickname());
+		reply.sendReply(443, client, NULL, channel, "INVITE", target->getNickname());
 		return;
 	}
 
@@ -84,5 +84,5 @@ void Commands::Invite::execute(Client& client, Server& server)
 	channel->invite(*target);
 
 	// Envoi de la réponse pour notifier l'invitation réussie
-	reply.sendReply(341, client, target, channel, &server, "INVITE");
+	reply.sendReply(341, client, target, channel, "INVITE");
 }

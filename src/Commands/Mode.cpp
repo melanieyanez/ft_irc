@@ -63,7 +63,7 @@ void Commands::Mode::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "MODE", this->channelName);
+		reply.sendReply(this->errorCode, client, NULL, NULL, "MODE", this->channelName);
 		return;
 	}
 
@@ -72,14 +72,14 @@ void Commands::Mode::execute(Client& client, Server& server)
 
 	 if (!channel)
 	{
-		reply.sendReply(403, client, NULL, NULL, &server, "MODE", this->channelName);
+		reply.sendReply(403, client, NULL, NULL, "MODE", this->channelName);
 		return;
 	}
 
 	// Vérification si l'utilisateur est opérateur dans le channel.
 	if (!channel->isOperator(client))
 	{
-		reply.sendReply(482, client, NULL, channel, &server, "MODE");
+		reply.sendReply(482, client, NULL, channel, "MODE");
 		return;
 	}
 
@@ -92,7 +92,7 @@ void Commands::Mode::execute(Client& client, Server& server)
 		// Vérification si le client cible existe
 		if (!target)
 		{
-			reply.sendReply(401, client, NULL, channel, &server, "MODE", extraParam);
+			reply.sendReply(401, client, NULL, channel, "MODE", extraParam);
 			return;
 		}
 
@@ -120,7 +120,7 @@ void Commands::Mode::execute(Client& client, Server& server)
 		// Vérification si le client cible existe
 		if (!target)
 		{
-			reply.sendReply(401, client, NULL, channel, &server, "MODE", extraParam);
+			reply.sendReply(401, client, NULL, channel, "MODE", extraParam);
 			return;
  		}
 
@@ -204,7 +204,7 @@ void Commands::Mode::execute(Client& client, Server& server)
 		// Vérification si le canal a déjà un mot de passe défini
 		if (channel->isProtected())
 		{
-			reply.sendReply(467, client, NULL, channel, &server, "MODE");
+			reply.sendReply(467, client, NULL, channel, "MODE");
 			return;
 		}
 		
@@ -220,7 +220,7 @@ void Commands::Mode::execute(Client& client, Server& server)
 		//Vérification si le mot de passe fourni est correct
 		if (extraParam.empty() || !channel->isCorrectKey(extraParam))
 		{
-			reply.sendReply(464, client, NULL, channel, &server, "MODE", "Incorrect password");
+			reply.sendReply(464, client, NULL, channel, "MODE", "Incorrect password");
 			return;
 		}
 		
@@ -302,6 +302,6 @@ void Commands::Mode::execute(Client& client, Server& server)
 	// Si le mode demandé est invalide
 	else
 	{
-		reply.sendReply(472, client, NULL, channel, &server, mode);
+		reply.sendReply(472, client, NULL, channel, mode);
 	}
 }

@@ -35,7 +35,7 @@ void Commands::Ison::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "ISON");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "ISON");
 		return;
 	}
 
@@ -51,5 +51,5 @@ void Commands::Ison::execute(Client& client, Server& server)
 	}
 
 	// Envoi de la réponse avec la liste des utilisateurs connectés
-	reply.sendReply(303, client, NULL, NULL, &server, "", onlineUsers);
+	reply.sendReply(303, client, NULL, NULL, "", onlineUsers);
 }

@@ -47,7 +47,7 @@ void Commands::Join::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "JOIN");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "JOIN");
 		return;
 	}
 
@@ -62,7 +62,7 @@ void Commands::Join::execute(Client& client, Server& server)
 		// Vérification du format du nom du canal
 		if (channelName[0] != '#')
 		{
-			reply.sendReply(476, client, NULL, NULL, &server, "JOIN", channelName);
+			reply.sendReply(476, client, NULL, NULL, "JOIN", channelName);
 			continue;
 		}
 
@@ -98,28 +98,28 @@ void Commands::Join::execute(Client& client, Server& server)
 		// Vérification si le canal est protégé par un mot de passe et que la clé est incorrecte
 		if (channel->isProtected() && !channel->isCorrectKey(key))
 		{
-			reply.sendReply(475, client, NULL, channel, &server, "JOIN");
+			reply.sendReply(475, client, NULL, channel, "JOIN");
 			continue;
 		}
 
 		// Vérification si le client est déjà membre du canal
 		if (channel->isMember(client))
 		{
-			reply.sendReply(443, client, NULL, channel, &server, "JOIN", client.getNickname());
+			reply.sendReply(443, client, NULL, channel, "JOIN", client.getNickname());
 			continue;
 		}
 
 		// Vérification si le canal est en mode invitation uniquement et que l'utilisateur n'est pas invité
 		if (channel->isInvitationOnly() && !channel->isMember(client) && !channel->isInvited(client))
 		{
-			reply.sendReply(473, client, NULL, channel, &server, "JOIN");
+			reply.sendReply(473, client, NULL, channel, "JOIN");
 			continue;
 		}
 
 		// Tentative d'ajouter l'utilisateur au canal (échec si le canal est plein)
 		if (!channel->addMember(client))
 		{
-			reply.sendReply(471, client, NULL, channel, &server, "JOIN");
+			reply.sendReply(471, client, NULL, channel, "JOIN");
 			continue;
 		}
 
@@ -130,7 +130,7 @@ void Commands::Join::execute(Client& client, Server& server)
 		channel->sendMessage(":" + client.getFullIdentifier() + " JOIN :" + channel->getChannelName());
 		
 		// Envoi de la liste des utilisateurs dans le canal
-		reply.sendReply(353, client, NULL, channel, &server, "JOIN");
-		reply.sendReply(366, client, NULL, channel, &server, "JOIN");
+		reply.sendReply(353, client, NULL, channel, "JOIN");
+		reply.sendReply(366, client, NULL, channel, "JOIN");
 	}
 }

@@ -20,21 +20,21 @@ void Commands::Nick::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "NICK", "");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "NICK", "");
 		return;
 	}
 
 	// Vérification si le client a passé l'étape de la commande PASS
 	if (!client.hasPass())
 	{
-		reply.sendReply(451, client, NULL, NULL, &server, "NICK", "");
+		reply.sendReply(451, client, NULL, NULL, "NICK", "");
 		return;
 	}
 
 	// Vérification si le pseudo est déjà utilisé par un autre client
 	if (server.isNicknameConnected(name))
 	{
-		reply.sendReply(433, client, NULL, NULL, &server, "NICK", this->name);
+		reply.sendReply(433, client, NULL, NULL, "NICK", this->name);
 		return;
 	}
 

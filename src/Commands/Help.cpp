@@ -28,7 +28,7 @@ void Commands::Help::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "HELP", "");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "HELP", "");
 		return;
 	}
 	
@@ -38,14 +38,14 @@ void Commands::Help::execute(Client& client, Server& server)
 		// Si aucune commande spécifique n'est demandée, on affiche l'aide pour la connexion
 		if (this->command.empty())
 		{
-			reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
+			reply.sendReply(704, client, NULL, NULL, "HELP", "");
 			client.sendMessage(generateLoginHelp(), "client");
-			reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
+			reply.sendReply(705, client, NULL, NULL, "HELP", "");
 			client.sendMessage("Displayed login help for user: " + client.getNickname(), "console");
 		}
 		else
 			// Si le client n'est pas authentifié et demande une commande spécifique, envoi d'une erreur
-			reply.sendReply(451, client, NULL, NULL, &server, "HELP", "");
+			reply.sendReply(451, client, NULL, NULL, "HELP", "");
 		return;
 	}
 
@@ -57,21 +57,21 @@ void Commands::Help::execute(Client& client, Server& server)
 	// Si aucune commande spécifique n'est demandée, on affiche l'aide générale
 	if (this->command.empty())
 	{
-		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
+		reply.sendReply(704, client, NULL, NULL, "HELP", "");
 		helpMessage += generateGeneralHelp();
 		client.sendMessage("Displayed general help for user: " + client.getNickname(), "console");
 	}
 	else
 	{
 		// Si une commande spécifique est demandée, on affiche l'aide pour cette commande
-		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
+		reply.sendReply(704, client, NULL, NULL, "HELP", "");
 		helpMessage += generateCommandHelp(this->command);
 		client.sendMessage("Displayed help for command: " + this->command + " to user: " + client.getNickname(), "console");
 	}
 
 	// Envoi du message d'aide au client et de la fin de l'aide
 	client.sendMessage(helpMessage, "client");
-	reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
+	reply.sendReply(705, client, NULL, NULL, "HELP", "");
 }
 
 std::string Commands::Help::generateLoginHelp() const

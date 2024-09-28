@@ -47,33 +47,34 @@ Commands::User::User(const std::vector<std::string> &command_parts) : name(""), 
 
 void Commands::User::execute(Client& client, Server& server)
 {
+	(void)server;
 	Reply reply;
 
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "USER");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "USER");
 		return;
 	}
 	
 	// Vérification que le client a envoyé la commande PASS
 	if (!client.hasPass())
 	{
-		reply.sendReply(451, client, NULL, NULL, &server, "USER");
+		reply.sendReply(451, client, NULL, NULL, "USER");
 		return;
 	}
 
 	// Vérification que le client a un pseudo défini
 	if (!client.hasNick())
 	{
-		reply.sendReply(431, client, NULL, NULL, &server, "USER");
+		reply.sendReply(431, client, NULL, NULL, "USER");
 		return;
 	}
 
 	// Vérification si le client est déjà authentifié
 	if (client.getIsAuthenticated())
 	{
-		reply.sendReply(462, client, NULL, NULL, &server, "USER");
+		reply.sendReply(462, client, NULL, NULL, "USER");
 		return;
 	}
 
@@ -83,5 +84,5 @@ void Commands::User::execute(Client& client, Server& server)
 	client.authenticate();
 	
 	// Envoi de la réponse de bienvenue au client
-	reply.sendReply(001, client, NULL, NULL, &server, "");
+	reply.sendReply(001, client, NULL, NULL, "");
 }

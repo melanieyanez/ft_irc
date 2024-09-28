@@ -23,21 +23,21 @@ void Commands::Pass::execute(Client& client, Server& server)
 	// Gestion des erreurs détectées lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "PASS");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "PASS");
 		return;
 	}
 
 	// Vérification si le mot de passe a déjà été défini pour ce client
 	else if (client.hasPass())
 	{
-		reply.sendReply(462, client, NULL, NULL, &server, "PASS");
+		reply.sendReply(462, client, NULL, NULL, "PASS");
 		return;
 	}
 
 	// Vérification si le mot de passe fourni correspond au mot de passe du serveur
 	else if (server.getPassword() != this->password)
 	{
-		reply.sendReply(464, client, NULL, NULL, &server, "PASS");
+		reply.sendReply(464, client, NULL, NULL, "PASS");
 		return;
 	}
 

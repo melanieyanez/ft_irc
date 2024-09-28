@@ -26,7 +26,7 @@ void Commands::List::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "LIST");
+		reply.sendReply(this->errorCode, client, NULL, NULL, "LIST");
 		return;
 	}
 
@@ -42,9 +42,9 @@ void Commands::List::execute(Client& client, Server& server)
 	{
 		Channel* channel = *it;
 
-		reply.sendReply(322, client, NULL, channel, &server, "LIST");
+		reply.sendReply(322, client, NULL, channel, "LIST");
 	}
 
 	// Envoi de la réponse pour indiquer la fin de la liste des canaux
-	reply.sendReply(323, client, NULL, NULL, &server, "LIST");
+	reply.sendReply(323, client, NULL, NULL, "LIST");
 }

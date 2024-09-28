@@ -11,7 +11,7 @@ class Reply
 {
 	public:
 
-		void sendReply(const int &code, Client &client, Client *target, Channel *channel = NULL, Server *server = NULL, const std::string &command = "", const std::string &extra = "")  const;
+		void sendReply(const int &code, Client &client, Client *target, Channel *channel = NULL, const std::string &command = "", const std::string &extra = "")  const;
 
 	private:
 

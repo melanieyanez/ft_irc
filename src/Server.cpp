@@ -261,7 +261,7 @@ void Server::handleCommand(std::string command, Client* creator)
 	// Vérification si le client est authentifié pour exécuter certaines commandes
 	if (command_parts[0] != "HELP" && command_parts[0] != "PASS" && command_parts[0] != "NICK" && command_parts[0] != "USER" && !creator->getIsAuthenticated())
 	{
-		reply.sendReply(451, *creator, NULL, NULL, NULL, command_parts[0]);
+		reply.sendReply(451, *creator, NULL, NULL, command_parts[0]);
 		return;
 	}
 
@@ -296,7 +296,7 @@ void Server::handleCommand(std::string command, Client* creator)
 		Commands::Part(command_parts).execute(*creator, *this);
 	else
 	{
-		reply.sendReply(999, *creator, NULL, NULL, NULL, command_name);
+		reply.sendReply(999, *creator, NULL, NULL, command_name);
 	}
 }
 

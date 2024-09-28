@@ -56,7 +56,7 @@ void Commands::Topic::execute(Client& client, Server& server)
 	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
-		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "TOPIC", this->channel);
+		reply.sendReply(this->errorCode, client, NULL, NULL, "TOPIC", this->channel);
 		return;
 	}
 
@@ -66,7 +66,7 @@ void Commands::Topic::execute(Client& client, Server& server)
 	// Si le canal n'existe pas
 	if (!channel)
 	{
-		reply.sendReply(403, client, NULL, NULL, &server, "TOPIC", this->channel);
+		reply.sendReply(403, client, NULL, NULL, "TOPIC", this->channel);
 		return;
 	}
 
@@ -84,7 +84,7 @@ void Commands::Topic::setTopic(Client& client, Server&, Channel& channel)
 	// Vérification si le canal restreint la modification du topic et si l'utilisateur est opérateur
 	if (channel.isTopicRestricted() && !channel.isOperator(client))
 	{
-		reply.sendReply(482, client, NULL, &channel, NULL, "TOPIC");
+		reply.sendReply(482, client, NULL, &channel, "TOPIC");
 		return;
 	}
 
@@ -104,11 +104,11 @@ void Commands::Topic::getCurrentTopic(Client& client, Server&, Channel& channel)
 
 	// Si aucun topic n'est défini pour le canal
 	if (channel.getTopic().empty())
-		reply.sendReply(331, client, NULL, &channel, NULL, "TOPIC");
+		reply.sendReply(331, client, NULL, &channel, "TOPIC");
 	else
 	{
 		// Envoi du topic actuel et des informations de modification au client
-		reply.sendReply(332, client, NULL, &channel, NULL, "TOPIC");
-		reply.sendReply(333, client, NULL, &channel, NULL, "TOPIC");
+		reply.sendReply(332, client, NULL, &channel, "TOPIC");
+		reply.sendReply(333, client, NULL, &channel, "TOPIC");
 	}
 }

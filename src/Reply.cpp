@@ -1,8 +1,7 @@
 #include "Reply.hpp"
 
-void Reply::sendReply(const int &code, Client &client, Client *target, Channel *channel, Server *server, const std::string &command, const std::string &extra) const
+void Reply::sendReply(const int &code, Client &client, Client *target, Channel *channel, const std::string &command, const std::string &extra) const
 {
-	(void)server;
 	switch (code)
 	{
 		case 001:
