@@ -11,7 +11,7 @@ Client::Client(Server& server, int fd, std::string hostname) : server(server)
 	this->password = "";
 	this->nickname = "";
 
-	std::cout << "Client<" << this << ">: " << fd << std::endl;
+	//std::cout << "Client<" << this << ">: " << fd << std::endl;
 	this->fd = fd;
 	this->hostname = hostname;
 }

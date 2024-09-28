@@ -92,9 +92,17 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 		case 464:
 			errPasswordMismatch(client, command);
 			break;
+		case 467: //USED
+			if (channel)
+				errChannelKeyAlreadySet(client, *channel);
+			break;
 		case 471: //USED
 			if (channel)
 				errChannelIsFull(client, *channel, command);
+			break;
+		case 472: //USED
+			if (channel)
+				errInvalidMode(client, *channel, command);
 			break;
 		case 473: //USED
 			if (channel)
@@ -274,10 +282,22 @@ void Reply::errPasswordMismatch(Client &client, std::string command)
 	client.sendBack("464 " + client.getNickname() + " :Password incorrect", "client");
 }
 
+void Reply::errChannelKeyAlreadySet(Client &client, Channel &channel)
+{
+	client.sendMessage("Error 467: Channel key already set for channel " + channel.getChannelName(), "console");
+	client.sendBack("467 " + client.getNickname() + " " + channel.getChannelName() + " :Channel key already set", "client");
+}
+
 void Reply::errChannelIsFull(Client &client, Channel &channel, std::string command)
 {
 	client.sendMessage("Error 471: " + command + " - Channel " + channel.getChannelName() + " is full", "console");
 	client.sendBack("471 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+l) - Channel is full", "client");
+}
+
+void Reply::errInvalidMode(Client &client, Channel &channel, const std::string command)
+{
+	client.sendMessage("Error 472: Unknown mode " + command + " on channel " + channel.getChannelName(), "console");
+	client.sendBack("472 " + client.getNickname() + " " + command + " :Unknown mode flag", "client");
 }
 
 void Reply::errInviteOnlyChan(Client &client, Channel &channel, std::string command)

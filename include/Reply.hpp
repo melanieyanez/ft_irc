@@ -43,7 +43,9 @@ class Reply
 		void errNeedMoreParams(Client &client, std::string command);
 		void errAlreadyRegistered(Client &client, std::string command);
 		void errPasswordMismatch(Client &client, std::string command);
+		void errChannelKeyAlreadySet(Client &client, Channel &channel);
 		void errChannelIsFull(Client &client, Channel &channel, std::string command);
+		void errInvalidMode(Client &client, Channel &channel, const std::string command);
 		void errInviteOnlyChan(Client &client, Channel &channel, std::string command);
 		void errBadChannelKey(Client &client, Channel &channel, std::string command);
 		void errChanOpPrivsNeeded(Channel &channel, Client &client, std::string command);

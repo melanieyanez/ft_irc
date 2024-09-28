@@ -11,6 +11,7 @@ Commands::Join::Join(std::vector<std::string> command_parts)
 {
 	this->error = false;
 
+	// Vérification de la syntaxe
 	if (command_parts.size() < 2)
 	{
 		this->error = true;
@@ -18,11 +19,13 @@ Commands::Join::Join(std::vector<std::string> command_parts)
 		return;
 	}
 
+	// Séparation des différents noms de canaux fournis
 	std::stringstream channelStream(command_parts[1]);
 	std::string channel;
 	while (std::getline(channelStream, channel, ','))
 		this->channels.push_back(channel);
 
+	// Gestion des clés si elles sont fournies
 	if (command_parts.size() >= 3)
 	{
 		std::stringstream keyStream(command_parts[2]);
@@ -30,23 +33,23 @@ Commands::Join::Join(std::vector<std::string> command_parts)
 		while (std::getline(keyStream, key, ','))
 			this->keys.push_back(key);
 	}
-
-	while (this->keys.size() < this->channels.size())
-		this->keys.push_back("");
 }
 
 void Commands::Join::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	// Log pour indiquer que la commande JOIN est exécutée pour le client
 	client.sendMessage("Executing JOIN command for client: " + client.getNickname(), "console");
 
+	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "JOIN");
 		return;
 	}
 
+	// Association entre les canaux et les clés pour chaque tentative de rejoindre un canal
 	std::map<std::string, std::string> channelKeyMap;
 
 	for (size_t i = 0; i < channels.size(); ++i)
@@ -56,20 +59,26 @@ void Commands::Join::execute(Client& client, Server& server)
 
 		Channel* channel = server.getChannel(channelName);
 
+		// Si le canal est protégé par un mot de passe, on associe la clé fournie
 		if (channel && channel->isProtected())
 			channelKeyMap[channelName] = key;
 		else
 			channelKeyMap[channelName] = "";
 	}
 
+	// Pour chaque canal, tentative de rejoindre
 	for (std::map<std::string, std::string>::iterator it = channelKeyMap.begin(); it != channelKeyMap.end(); ++it)
 	{
 		std::string channelName = it->first;
 		std::string key = it->second;
 
+		// Log pour indiquer que le client tente de rejoindre le canal
 		client.sendMessage("Attempting to join channel: " + channelName, "console");
 
+		// Recherche du canal sur le serveur
 		Channel* channel = server.getChannel(channelName);
+
+		// Si le canal n'existe pas, le créer et l'ajouter au serveur
 		if (!channel)
 		{
 			client.sendMessage( "Channel not found, creating new channel: " + channelName, "console");
@@ -77,76 +86,42 @@ void Commands::Join::execute(Client& client, Server& server)
 			server.addChannel(channel);
 		}
 
+		// Vérification si le canal est protégé par un mot de passe et que la clé est incorrecte
 		if (channel->isProtected() && !channel->isCorrectKey(key))
 		{
 			reply.sendReply(475, client, NULL, channel, &server, "JOIN");
 			continue;
 		}
 
+		// Vérification si le client est déjà membre du canal
 		if (channel->isMember(client))
 		{
 			reply.sendReply(443, client, NULL, channel, &server, "JOIN", client.getNickname());
 			continue;
 		}
 
+		// Vérification si le canal est en mode invitation uniquement et que l'utilisateur n'est pas invité
 		if (channel->isInvitationOnly() && !channel->isMember(client) && !channel->isInvited(client))
 		{
 			reply.sendReply(473, client, NULL, channel, &server, "JOIN");
 			continue;
 		}
 
+		// Tentative d'ajouter l'utilisateur au canal (échec si le canal est plein)
 		if (!channel->addMember(client))
 		{
 			reply.sendReply(471, client, NULL, channel, &server, "JOIN");
 			continue;
 		}
 
+		// Log de succès dans la console après avoir rejoint le canal
+		client.sendMessage("Success: Client " + client.getNickname() + " joined channel: " + channelName, "console");
+		
+		// Envoi d'un message aux membres du canal pour indiquer que le client a rejoint
 		channel->sendMessage(":" + client.getFullIdentifier() + " JOIN :" + channel->getChannelName());
+		
+		// Envoi de la liste des utilisateurs dans le canal
 		reply.sendReply(353, client, NULL, channel, &server, "JOIN");
 		reply.sendReply(366, client, NULL, channel, &server, "JOIN");
-
-		client.sendMessage("Client " + client.getNickname() + " successfully joined channel: " + channelName, "console");
 	}
 }
-
-
-/*
-void Commands::Join::execute(Client& client, Server& server)
-{
-	ANCIEN TEST
-	
-	
-	// Je stock le nom du channel dans le nouvel objet channel
-	Channel* channel = server.getChannel(this->channelName);
-
-	// si il n'existe pas, je malloc un nouveau channel qui va prendre le nom de ce que j'ai mis dans command_parts
-	if (!channel)
-	{
-		channel = new Channel(this->channelName);
-		server.addChannel(channel);
-	}
-
-	// controle si le client n'est pas deja dans le channel
-	if (channel->isMember(client))
-	{
-		client.sendMessage("You are already in the channel : " + channelName);
-		return;
-	}
-
-	// ajouter le client au channel
-
-	channel->addMember(&client);
-	server.addChannel(channel);
-
-	// envoyer la notification a pour le join
-	client.sendMessage(":" + client.getNickname() + " JOIN " + channelName);
-
-	// envoyer la notif a tout les autre membres du channel
-	std::vector<Client*> members = channel->getMembers();
-	for (std::vector<Client *>::iterator it = members.begin(); it != members.end(); ++it)
-	{
-		if ((*it)->getNickname() != client.getNickname())
-			(*it)->sendMessage(":" + client.getNickname() + " JOIN " + channelName);
-	}	
-}
-*/

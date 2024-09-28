@@ -130,7 +130,7 @@ void Server::start()
 			struct hostent *host;
 			struct sockaddr_in* in_addr = (struct sockaddr_in*)&client_addr;
 			host = gethostbyaddr(&(in_addr->sin_addr), sizeof(in_addr->sin_addr), AF_INET);
-			std::cout << "Client hostname: " << host->h_name << std::endl;
+			//std::cout << "Client hostname: " << host->h_name << std::endl;
 
 			// Set non-blocking mode
 			fcntl(client_fd, F_SETFL, O_NONBLOCK);
@@ -254,6 +254,14 @@ void Server::handleCommand(std::string command, Client* creator)
 			}
 		}
 	}
+	else if (command_parts[0] == "MODE" && command_parts.size() > 3 && (command_parts[2] == "+k" || command_parts[2] == "-k"))
+	{
+		size_t passPos = command.find(command_parts[3]);
+		if (passPos != std::string::npos)
+		{
+			command.replace(passPos, command_parts[3].length(), std::string(command_parts[3].length(), '*'));
+		}
+	}
 	creator->sendMessage("[" + creator->getFullIdentifier() + "] : " + command, "console");
 
 	std::string command_name = command_parts[0];
@@ -295,7 +303,7 @@ void Server::handleCommand(std::string command, Client* creator)
 		Commands::Part(command_parts).execute(*creator, *this);
 	else
 	{
-		std::cout << "handle command: Invalid command" << std::endl; //mettre 999
+		reply.sendReply(999, *creator, NULL, NULL, NULL, command_name);
 	}
 }
 

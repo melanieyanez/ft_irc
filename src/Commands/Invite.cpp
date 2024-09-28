@@ -7,6 +7,8 @@
 Commands::Invite::Invite(std::vector<std::string> command_parts)
 {
 	this->error = false;
+
+	// Vérification de la syntaxe
 	if (command_parts.size() != 3)
 	{
 		this->error = true;
@@ -22,54 +24,60 @@ void Commands::Invite::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	// Log pour indiquer que la commande INVITE est exécutée pour le client
 	client.sendMessage("Executing INVITE command for client: " + client.getNickname(), "console");
 
+	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "INVITE", "");
 		return;
 	}
 
+	// Récupération du canal depuis le serveur
 	Channel	*channel = server.getChannel(this->channel);
 
-	// check si le server existe
+	// Vérification si le canal existe
 	if (!channel)
 	{
 		reply.sendReply(403, client, NULL, NULL, &server, "INVITE", this->channel);
 		return;
 	}
 
+	// Vérification si le client est membre du canal
 	if (!channel->isMember(client))
 	{
 		reply.sendReply(442, client, NULL, channel, &server, "INVITE", "");
 		return;
 	}
 
+	// Vérification si le client est opérateur dans le canal
 	if (!channel->isOperator(client))
 	{
 		reply.sendReply(482, client, NULL, channel, &server, "INVITE", "");
 		return;
 	}
 
-	// check si la personne existe dans le server quelque part
+	// Récupération de l'utilisateur cible par son pseudo
 	Client* target = server.getClientByNickname(this->target);
 
-	// si la personne existe pas = notification
+	// Vérification si l'utilisateur cible existe
 	if (!target)
 	{
 		reply.sendReply(401, client, target, channel, &server, "INVITE", this->target);
 		return;
 	}
 
-	// check si la personne est deja dans le channel
+	// Vérification si l'utilisateur cible est déjà membre du canal
 	if (channel->isMember(*target))
 	{
 		reply.sendReply(443, client, NULL, channel, &server, "INVITE", target->getNickname());
 		return;
 	}
 
-	// ajoute la personne au channel
+	// Invitation de l'utilisateur cible dans le canal
 	channel->invite(*target);
 
-	reply.sendReply(341, client, target, channel, &server, "INVITE", "");
+	// Envoi de la réponse pour notifier l'invitation réussie
+	reply.sendReply(341, client, target, channel, &server, "INVITE");
 }

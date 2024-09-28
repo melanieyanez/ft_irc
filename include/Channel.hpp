@@ -34,7 +34,7 @@ class Channel
 		std::vector<Client*> 	getMembers();
 		std::string 			getMemberList();
 		std::string 			getTopic();
-		unsigned int 			getLimits();
+		int 					getLimits();
 		unsigned int 			getMemberCount() const;
 		std::string 			getLastTopicSetter();
 		std::string 			getLastTopicSetTime();

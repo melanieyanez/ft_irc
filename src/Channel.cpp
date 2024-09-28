@@ -12,7 +12,7 @@ Channel::Channel(std::string name, std::string key) : name(name), key(key)
 void Channel::sendMessage(std::string message)
 {
 	for (std::vector<Client*>::iterator it = members.begin(); it != members.end(); ++it)
-		(*it)->sendMessage(message);
+		(*it)->sendMessage(message, "client");
 }
 
 void Channel::sendBack(std::string reply)
@@ -168,7 +168,7 @@ void Channel::setLimits(unsigned int limit)
 	this->memberLimit = limit;
 }
 
-unsigned int Channel::getLimits()
+int Channel::getLimits()
 {
 	return this->memberLimit;
 }

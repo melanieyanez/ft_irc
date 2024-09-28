@@ -6,11 +6,15 @@
 Commands::Help::Help(std::vector<std::string> command_parts)
 {
 	this->error = false;
+
+	// Vérification de la syntaxe
 	if (command_parts.size() > 2)
 	{
 		this->error = true;
 		this->errorCode = 461;
 	}
+
+	// Gestion de la commande optionnelle
 	else if (command_parts.size() == 2)
 		this->command = command_parts[1];
 	else
@@ -22,16 +26,20 @@ void Commands::Help::execute(Client& client, Server& server)
 	(void)server;
 	Reply reply;
 
+	// Log pour indiquer que la commande HELP est exécutée pour le client
 	client.sendMessage("Executing HELP command for client: " + client.getNickname(), "console");
 
+	// Si une erreur a été détectée lors de la construction de la commande
 	if (this->error)
 	{
 		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "HELP", "");
 		return;
 	}
 	
+	// Vérification si le client est authentifié
 	if (!client.getIsAuthenticated())
 	{
+		// Si aucune commande spécifique n'est demandée, on affiche l'aide pour la connexion
 		if (this->command.empty())
 		{
 			reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
@@ -40,14 +48,17 @@ void Commands::Help::execute(Client& client, Server& server)
 			client.sendMessage("Displayed login help for user: " + client.getNickname(), "console");
 		}
 		else
+			// Si le client n'est pas authentifié et demande une commande spécifique, envoi d'une erreur
 			reply.sendReply(451, client, NULL, NULL, &server, "HELP", "");
 		return;
 	}
 
+	// Génération du message d'aide en fonction de la commande fournie
 	std::string helpMessage;
 
 	helpMessage += "\r\n\r";
 
+	// Si aucune commande spécifique n'est demandée, on affiche l'aide générale
 	if (this->command.empty())
 	{
 		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
@@ -56,11 +67,13 @@ void Commands::Help::execute(Client& client, Server& server)
 	}
 	else
 	{
+		// Si une commande spécifique est demandée, on affiche l'aide pour cette commande
 		reply.sendReply(704, client, NULL, NULL, &server, "HELP", "");
 		helpMessage += generateCommandHelp(this->command);
 		client.sendMessage("Displayed help for command: " + this->command + " to user: " + client.getNickname(), "console");
 	}
 
+	// Envoi du message d'aide au client et de la fin de l'aide
 	client.sendMessage(helpMessage, "client");
 	reply.sendReply(705, client, NULL, NULL, &server, "HELP", "");
 }
