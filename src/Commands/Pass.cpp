@@ -1,13 +1,15 @@
 #include "Commands/Pass.hpp"
+#include "Reply.hpp"
 
 #include <iostream>
 
 Commands::Pass::Pass(std::vector<std::string> command_parts)
 {
+	// Vérification du nombre de paramètres
 	if (command_parts.size() != 2)
 	{
 		this->error = true;
-		this->errorMessage = "461 PASS :Wrong number of parameters";
+		this->errorCode = 461;
 		return;
 	}
 	this->password = command_parts[1];
@@ -17,20 +19,29 @@ Commands::Pass::Pass(std::vector<std::string> command_parts)
 
 void Commands::Pass::execute(Client& client, Server& server)
 {
+	Reply reply;
+
+	// Gestion des erreurs détectées lors de la construction de la commande
 	if (this->error)
 	{
-		client.sendBack(this->errorMessage, "client");
+		reply.sendReply(this->errorCode, client, NULL, NULL, &server, "PASS");
 		return;
 	}
+
+	// Vérification si le mot de passe a déjà été défini pour ce client
 	else if (client.hasPass())
 	{
-		client.sendBack("462 PASS :You may not reregister", "client");
-        return;
-	}
-	else if (server.getPassword() != this->password)
-	{
-		client.sendBack("464 :Password Incorrect", "client");
+		reply.sendReply(462, client, NULL, NULL, &server, "PASS");
 		return;
 	}
+
+	// Vérification si le mot de passe fourni correspond au mot de passe du serveur
+	else if (server.getPassword() != this->password)
+	{
+		reply.sendReply(464, client, NULL, NULL, &server, "PASS");
+		return;
+	}
+
+	// Définition du mot de passe pour le client
 	client.setPassword(password);
 }

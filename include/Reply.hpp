@@ -24,7 +24,7 @@ class Reply
 		void rplTopic(Client &client, Channel &channel);
 		void rplTopicWhoTime(Channel &channel, Client &client);
 		void rplInviting(Client &client, Channel &channel, Client &target);
-		void rplWhoReply(Channel &channel, Client &client);
+		void rplWhoReply(Channel *channel, Client &client, Client *target, std::string command);
 		void rplNamReply(Client &client, Channel &channel);
 		void rplEndOfNames(Client &client, Channel &channel);
 		void rplHelpStart(Client &client, const std::string command);
@@ -48,6 +48,7 @@ class Reply
 		void errInvalidMode(Client &client, Channel &channel, const std::string command);
 		void errInviteOnlyChan(Client &client, Channel &channel, std::string command);
 		void errBadChannelKey(Client &client, Channel &channel, std::string command);
+		void errBadChannelMask(Client &client, const std::string &channel);
 		void errChanOpPrivsNeeded(Channel &channel, Client &client, std::string command);
 		void errUnknownCommand(Client &client, const std::string command);
 };

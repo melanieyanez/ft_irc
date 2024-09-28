@@ -2,7 +2,6 @@
 
 #include <ctime>
 
-// pas fini =====================
 Channel::Channel(std::string name, std::string key) : name(name), key(key)
 {
 	this->invitationOnly = false;
@@ -36,41 +35,42 @@ bool Channel::isMember(Client& client)
 	return false;
 }
 
-// pas fini =====================
 bool Channel::addMember(Client& client)
 {
-	// check si les membres sont limite == a controler, pas sur que ca soit la bonne place
+	// Si une limite de membres est définie et est atteinte, on refuse l'ajout
 	if (memberLimit != 0 && members.size() >= memberLimit)
 		return false;
 
+	// Si le canal est vide, le premier membre devient opérateur
 	if (members.empty())
 		operators.push_back(&client);
 
+	// Si le client n'est pas déjà membre, on l'ajoute
 	if (!isMember(client))
 		members.push_back(&client);
 
 	return true;
 }
 
-// pas fini =====================
 std::vector<Client*> Channel::getMembers()
 {
 	return members;
 }
 
+// Renvoie la liste des membres sous forme de chaîne, avec un "@" pour les opérateurs
 std::string Channel::getMemberList()
 {
 	std::string memberList;
 
 	for (std::vector<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
 	{
-		if (isOperator(**it))
+		if (isOperator(**it)) // Préfixe avec "@" si le membre est opérateur
 			memberList += "@" + (*it)->getNickname() + " ";
 		else
 			memberList += (*it)->getNickname() + " ";
 	}
 	if (!memberList.empty())
-		memberList.pop_back();
+		memberList.pop_back(); // Suppression de l'espace à la fin
 
 	return memberList;
 }
@@ -85,6 +85,8 @@ void Channel::removeMember(Client& client)
 			break;
 		}
 	}
+	
+	// Si le membre est également opérateur, on le supprime de la liste des opérateurs
 	for (std::vector<Client*>::iterator it = operators.begin(); it != operators.end(); ++it)
 	{
 		if ((*it)->getNickname() == client.getNickname())
@@ -216,7 +218,11 @@ void Channel::setLastTopicSetter(std::string nickName)
 
 std::string Channel::getLastTopicSetTime()
 {
-	return std::string(std::ctime(&this->lastTopicSetTime));
+	std::string timeStr = std::ctime(&this->lastTopicSetTime);
+	
+	if (!timeStr.empty() && timeStr.back() == '\n')
+		timeStr.pop_back();
+	return timeStr;
 }
 
 void Channel::setLastTopicSetTime()

@@ -17,6 +17,14 @@ Commands::Kick::Kick(std::vector<std::string> command_parts)
 	this->channelName = command_parts[1];
 	this->nickname = command_parts[2];
 
+	// Vérification du format du nom du canal
+	if (this->channelName[0] != '#')
+	{
+		this->error = true;
+		this->errorCode = 476; // Nom de canal invalide
+		return;
+	}
+
 	// Gestion optionnelle de la raison
 	if (command_parts.size() >= 4)
 	{

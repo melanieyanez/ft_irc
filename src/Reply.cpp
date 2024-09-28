@@ -5,20 +5,20 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 	(void)server;
 	switch (code)
 	{
-		case 001: //USED
+		case 001:
 			rplWelcome(client);
 			break;
-		case 303: //USED
+		case 303:
 			rplIson(client, extra);
 			break;
 		case 315:
 			rplEndOfWho(client);
 			break;
-		case 322: //USED
+		case 322:
 			if (channel) 
 				rplList(client, *channel);
 			break;
-		case 323: //USED
+		case 323:
 			rplListEnd(client);
 			break;
 		case 331:
@@ -33,33 +33,32 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 			if (channel)
 				rplTopicWhoTime(*channel, client);
 			break;
-		case 341: //USED
+		case 341:
 			if (target && channel)
 				rplInviting(client, *channel, *target);
 			break;
 		case 352:
-			if (channel)
-				rplWhoReply(*channel, client);
+			rplWhoReply(channel, client, target, extra);
 			break;
-		case 353: //USED
+		case 353:
 			if (channel)
 				rplNamReply(client, *channel);
 			break;
-		case 366: //USED
+		case 366:
 			if (channel)
 				rplEndOfNames(client, *channel);
 			break;
-		case 401: //USED
+		case 401:
 			errNoSuchNick(client, extra, command);
 			break;
-		case 403: //USED
+		case 403:
 			errNoSuchChannel(client, command, extra);
 			break;
 		case 404:
 			if (channel)
 				errCannotSendToChan(*channel, client, command);
 			break;
-		case 431: //USED
+		case 431:
 			errNoNickNameGiven(client, command);
 			break;
 		case 432:
@@ -68,61 +67,64 @@ void Reply::sendReply(int code, Client &client, Client *target, Channel *channel
 		case 433:
 			errNickNameInUse(client, command);
 			break;
-		case 441://USED
-			if (channel)
+		case 441:
+			if (channel && target)
 				errUserNotInChannel(client, *channel, *target, command);
 			break;
-		case 442: //USED
+		case 442:
 			if (channel)
 				errNotOnChannel(client, *channel, command);
 			break;
-		case 443: //USED
+		case 443:
 			if (channel)
 				errUserOnChannel(client, *channel, extra, command);
 			break;
-		case 451: //USED
+		case 451:
 			errNotRegistered(client, command);
 			break;
-		case 461: //USED
+		case 461:
 			errNeedMoreParams(client, command);
 			break;
-		case 462: //USED
+		case 462:
 			errAlreadyRegistered(client, command);
 			break;
 		case 464:
 			errPasswordMismatch(client, command);
 			break;
-		case 467: //USED
+		case 467:
 			if (channel)
 				errChannelKeyAlreadySet(client, *channel);
 			break;
-		case 471: //USED
+		case 471:
 			if (channel)
 				errChannelIsFull(client, *channel, command);
 			break;
-		case 472: //USED
+		case 472:
 			if (channel)
 				errInvalidMode(client, *channel, command);
 			break;
-		case 473: //USED
+		case 473:
 			if (channel)
 				errInviteOnlyChan(client, *channel, command);
 			break;
-		case 475: //USED
+		case 475:
 			if (channel)
 				errBadChannelKey(client, *channel, command);
 			break;
-		case 482: //USED
+		case 476:
+				errBadChannelMask(client, extra);
+			break;
+		case 482:
 			if (channel)
 				errChanOpPrivsNeeded(*channel, client, command);
 			break;
-		case 704: //USED
+		case 704:
 			rplHelpStart(client, command);
 			break;
-		case 705: //USED
+		case 705:
 			rplEndOfHelp(client, command);
 			break;
-		case 999: //USED
+		case 999:
 			errUnknownCommand(client, command);
 			break;
 		default:
@@ -186,10 +188,22 @@ void Reply::rplInviting(Client &client, Channel &channel, Client &target)
 	client.sendBack("341 " + client.getNickname() + " " + target.getNickname() + " :" + channel.getChannelName(), "client");
 }
 
-void Reply::rplWhoReply(Channel &channel, Client &client)
+void Reply::rplWhoReply(Channel *channel, Client &client, Client *target, std::string extra)
 {
-	client.sendMessage("WHO reply for channel: " + channel.getChannelName() + " - Client: " + client.getNickname(), "console");
-	client.sendBack("352 " + client.getNickname() + " " + channel.getChannelName() + " " + client.getFullIdentifier() + " :H", "client");
+ 	std::string response;
+	
+	if (extra == "channel" && target && channel)
+		response = "352 " + client.getNickname() + " " + channel->getChannelName() + " " + target->getNickname() + " :" + target->getFullname();
+	else if (extra == "user" && target)
+		response = "352 " + client.getNickname() + " * " + target->getNickname() + " :" + target->getFullname();
+	else if (extra == "server" && target)
+		response = "352 " + client.getNickname() + " * " + target->getNickname() + " :" + target->getFullname();
+	else
+	{
+		client.sendMessage("WHO reply error - Invalid parameters", "console");
+		return;
+	}
+	client.sendBack(response, "client");
 }
 
 void Reply::rplNamReply(Client &client, Channel &channel)
@@ -310,6 +324,12 @@ void Reply::errBadChannelKey(Client &client, Channel &channel, std::string comma
 {
 	client.sendMessage("Error 475: " + command + " - Wrong key for channel " + channel.getChannelName(), "console");
 	client.sendBack("475 " + client.getNickname() + " " + channel.getChannelName() + " :Cannot join channel (+k) - Wrong key", "client");
+}
+
+void Reply::errBadChannelMask(Client &client, const std::string &channel)
+{
+	client.sendMessage("Error 476: Invalid channel name " + channel, "console");
+	client.sendBack("476 " + client.getNickname() + " " + channel + " :Invalid channel name", "client");
 }
 
 void Reply::errChanOpPrivsNeeded(Channel &channel, Client &client, std::string command)

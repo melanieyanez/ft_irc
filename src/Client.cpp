@@ -11,7 +11,7 @@ Client::Client(Server& server, int fd, std::string hostname) : server(server)
 	this->password = "";
 	this->nickname = "";
 
-	//std::cout << "Client<" << this << ">: " << fd << std::endl;
+	// Stockage du descripteur de fichier et du nom d'hôte
 	this->fd = fd;
 	this->hostname = hostname;
 }
@@ -19,7 +19,7 @@ Client::Client(Server& server, int fd, std::string hostname) : server(server)
 Client::~Client()
 {
 	std::cout << "Client<" << this << ">::~Client: " << fd << std::endl;
-	if (close(fd) < 0)
+	if (close(fd) < 0) // Fermeture du descripteur de fichier
 		std::cout << "Client<" << this << ">::~Client: closed failed " << errno << std::endl;
 }
 
@@ -94,28 +94,31 @@ void Client::authenticate()
 	this->isAuthenticated = true;
 }
 
+// Lit les paquets entrants du client et extrait la prochaine commande (jusqu'à "\r\n")
 std::string Client::readNextPacket()
 {
 	char buffer[512];
 	while (true)
 	{
+		// Lecture des données entrantes du client
 		int read_length = read(fd, buffer, 512);
 		if (read_length == -1)
 		{
 			if (errno == EAGAIN)
-				break;
-			throw ReadError(errno, *this);
+				break; // Pas d'erreur, mais pas encore de données disponibles
+			throw ReadError(errno, *this); // En cas d'erreur sérieuse de lecture
 		}
-		if (read_length == 0)
-			throw ReadError(-1, *this);
-		this->line.append(std::string(buffer, read_length));
+		if (read_length == 0) // Si le client a fermé la connexion
+			throw ReadError(-1, *this); // Le client est déconnecté
+		this->line.append(std::string(buffer, read_length)); // Ajout des données lues au buffer interne
 	}
 
+	// Recherche de la commande complète (terminée par "\r\n")
 	std::string::size_type crlf_pos;
 	while ((crlf_pos = line.find("\r\n")) != std::string::npos)
 	{
-		std::string command = line.substr(0, crlf_pos);
-		line.erase(0, crlf_pos + 2);
+		std::string command = line.substr(0, crlf_pos); // Extraction de la commande
+		line.erase(0, crlf_pos + 2); // Suppression de la commande traitée du buffer interne
 		return command;
 	}
 
@@ -141,9 +144,11 @@ void Client::sendMessage(std::string message, std::string target)
 		std::cout << message;
 }
 
-void Client::closeConnection() {
-	if (fd >= 0) {
-		close(fd);  // Fermer le socket
-		fd = -1;    // Marquer le socket comme fermé
+void Client::closeConnection()
+{
+	if (fd >= 0) // Vérification que le descripteur de fichier est valide
+	{
+		close(fd); // Fermeture du descripteur de fichier (socket)
+		fd = -1; // Marque le socket comme fermé
 	}
 }

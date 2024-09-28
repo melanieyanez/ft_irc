@@ -20,7 +20,7 @@ Commands::Mode::Mode(std::vector<std::string> command_parts)
 	if (this->channelName[0] != '#')
 	{
 		this->error = true;
-		this->errorCode = 403;
+		this->errorCode = 476;
 		return;
 	}
 

@@ -33,6 +33,10 @@ Commands::Join::Join(std::vector<std::string> command_parts)
 		while (std::getline(keyStream, key, ','))
 			this->keys.push_back(key);
 	}
+
+	// Si le nombre de clés est inférieur au nombre de canaux, remplir avec des chaînes vides
+	while (this->keys.size() < this->channels.size())
+		this->keys.push_back("");
 }
 
 void Commands::Join::execute(Client& client, Server& server)
@@ -56,6 +60,13 @@ void Commands::Join::execute(Client& client, Server& server)
 	{
 		std::string channelName = channels[i];
 		std::string key = keys[i];
+
+		// Vérification du format du nom du canal
+		if (channelName[0] != '#')
+		{
+			reply.sendReply(476, client, NULL, NULL, &server, "JOIN", channelName);
+			continue;
+		}
 
 		Channel* channel = server.getChannel(channelName);
 

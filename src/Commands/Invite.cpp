@@ -18,6 +18,13 @@ Commands::Invite::Invite(std::vector<std::string> command_parts)
 
 	this->target = command_parts[1];
 	this->channel = command_parts[2];
+
+	// Vérification du format du nom du canal
+	if (this->channel[0] != '#')
+	{
+		this->error = true;
+		this->errorCode = 476;
+	}
 }
 
 void Commands::Invite::execute(Client& client, Server& server)

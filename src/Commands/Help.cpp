@@ -111,7 +111,6 @@ std::string Commands::Help::generateGeneralHelp()
 	helpMessage += "PART <#channel> - Leaves the specified channel.\r\n";
 	helpMessage += "TOPIC <#channel> [new topic] - Changes or views the topic of a channel.\r\n";
 	helpMessage += "WHO [#channel|nickname] - Lists information about users.\r\n";
-	helpMessage += "WHOIS <nickname> - Displays detailed information about a user.\r\n";
 
 	return helpMessage;
 }
@@ -189,12 +188,6 @@ std::string Commands::Help::generateCommandHelp(const std::string& command)
 	{
 		helpMessage += "WHO [#channel|nickname] - Lists information about users.\r\n";
 		helpMessage += "Usage:\r\n  WHO #channel\r\n  WHO nickname\r\n";
-	}
-	if (command == "WHOIS")
-	{
-		helpMessage += "WHOIS <nickname> - Displays detailed information about a user.\r\n";
-		helpMessage += "Usage:\r\n  WHOIS <nickname>\r\n";
-		helpMessage += "Details:\r\n  The WHOIS command gives detailed information about the specified user, such as their nickname, username, host, and channels they are in.\r\n";
 	}
 	else
 	{
