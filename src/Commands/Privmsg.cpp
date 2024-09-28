@@ -4,12 +4,8 @@
 
 #include <sstream>
 
-Commands::Privmsg::Privmsg(std::vector<std::string> command_parts)
+Commands::Privmsg::Privmsg(std::vector<std::string> command_parts) : message(""), MAX_MESSAGE_LENGTH(400)
 {
-	// Définition de la longueur maximale d'un message
-	this->MAX_MESSAGE_LENGTH = 400;
-	this->error = false;
-
 	// Vérification du nombre de paramètres
 	if (command_parts.size() < 3)
 	{

@@ -1,7 +1,7 @@
 #include "Commands/Nick.hpp"
 #include "Reply.hpp"
 
-Commands::Nick::Nick(std::vector<std::string> command_parts)
+Commands::Nick::Nick(std::vector<std::string> command_parts) : name("")
 {
 	// Vérification de la syntaxe
 	if (command_parts.size() != 2)
@@ -10,7 +10,6 @@ Commands::Nick::Nick(std::vector<std::string> command_parts)
 		this->errorCode = 461;		
 		return;
 	}
-	this->error = false;
 	this->name = command_parts[1];
 }
 

@@ -5,10 +5,8 @@
 
 #include <sstream>
 
-Commands::Ison::Ison(std::vector<std::string> command_parts)
+Commands::Ison::Ison(std::vector<std::string> command_parts) : users()
 {
-	this->error = false;
-
 	// Vérification de la syntaxe
 	if (command_parts.size() < 2)
 	{

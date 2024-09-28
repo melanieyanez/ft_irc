@@ -27,12 +27,8 @@
 #include <sstream>
 
 // Constructeur de la classe Server, initialisant le port et le mot de passe du serveur
-Server::Server(std::string port, std::string password)
+Server::Server(std::string port, std::string password) : port(port), password(password), fd(-1), channelName(""), hostname(""), stopRequested(false)
 {
-	this->stopRequested = false;
-	this->port = port;
-	this->password = password;
-
 	// Préparation de l'initialisation du socket avec les informations sur l'adresse et le port
 	struct addrinfo hints;
 	struct addrinfo *result;

@@ -3,10 +3,8 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Help::Help(std::vector<std::string> command_parts)
+Commands::Help::Help(std::vector<std::string> command_parts) : command("")
 {
-	this->error = false;
-
 	// Vérification de la syntaxe
 	if (command_parts.size() > 2)
 	{
@@ -17,8 +15,6 @@ Commands::Help::Help(std::vector<std::string> command_parts)
 	// Gestion de la commande optionnelle
 	else if (command_parts.size() == 2)
 		this->command = command_parts[1];
-	else
-		this->command = "";
 }
 
 void Commands::Help::execute(Client& client, Server& server)

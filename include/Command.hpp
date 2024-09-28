@@ -6,12 +6,12 @@
 class Command
 {
 	public:
-	
-		virtual void execute(Client& client, Server& server) = 0;
+		Command() : error(false), errorCode(0){}
+		virtual void 	execute(Client& client, Server& server) = 0;
 
 	protected:
-		bool 		error;
-		int			errorCode;
+		bool 			error;
+		int				errorCode;
 
 };
 

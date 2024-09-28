@@ -14,7 +14,6 @@ Commands::List::List(std::vector<std::string> command_parts)
 		this->errorCode = 461;
 		return;
 	}
-	this->error = false;
 }
 		
 void Commands::List::execute(Client& client, Server& server)

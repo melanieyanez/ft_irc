@@ -1,10 +1,8 @@
 #include "Commands/Topic.hpp"
 #include "Reply.hpp"
 
-Commands::Topic::Topic(std::vector<std::string> command_parts)
+Commands::Topic::Topic(std::vector<std::string> command_parts) : channel(""), topic(""), isSettingTopic(false)
 {
-	this->error = false;
-
 	// Vérification du nombre de paramètres
 	if (command_parts.size() < 2)
 	{

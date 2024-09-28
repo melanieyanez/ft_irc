@@ -2,11 +2,7 @@
 
 #include <ctime>
 
-Channel::Channel(std::string name, std::string key) : name(name), key(key)
-{
-	this->invitationOnly = false;
-	this->topicRestricted = false;
-}
+Channel::Channel(std::string name, std::string key) : name(name), key(key), topic(""), memberLimit(0), invitationOnly(false), protection(false), topicRestricted(false), lastTopicSetter(""), lastTopicSetTime(std::time(0)){}
 
 void Channel::sendMessage(std::string message)
 {

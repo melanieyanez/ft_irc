@@ -2,10 +2,8 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Kick::Kick(std::vector<std::string> command_parts)
+Commands::Kick::Kick(std::vector<std::string> command_parts) : channelName(""), nickname(""), reason("")
 {
-	this->error = false;
-
 	// Vérification de la syntaxe
 	if (command_parts.size() < 3)
 	{

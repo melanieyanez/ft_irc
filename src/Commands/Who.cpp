@@ -3,7 +3,7 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Who::Who(std::vector<std::string> command_parts)
+Commands::Who::Who(std::vector<std::string> command_parts) : Target("")
 {
 	// Vérification du nombre de paramètres
 	if (command_parts.size() > 2)
@@ -12,8 +12,6 @@ Commands::Who::Who(std::vector<std::string> command_parts)
 		this->errorCode = 461;
 		return;
 	}
-
-	this->error = false;
 
 	// Si aucun paramètre n'est fourni, on liste tous les utilisateurs connectés
 	if (command_parts.size() == 1)

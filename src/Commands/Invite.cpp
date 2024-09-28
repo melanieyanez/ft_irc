@@ -4,10 +4,8 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Invite::Invite(std::vector<std::string> command_parts)
+Commands::Invite::Invite(std::vector<std::string> command_parts) : target(""), channel("")
 {
-	this->error = false;
-
 	// Vérification de la syntaxe
 	if (command_parts.size() != 3)
 	{

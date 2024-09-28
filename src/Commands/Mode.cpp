@@ -2,10 +2,8 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Mode::Mode(std::vector<std::string> command_parts)
+Commands::Mode::Mode(std::vector<std::string> command_parts) : channelName(""), mode(""), extraParam("")
 {
-	this->error = false;
-
 	// Vérification de la syntaxe
 	if (command_parts.size() < 3)
 	{

@@ -5,16 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 
-Client::Client(Server& server, int fd, std::string hostname) : server(server)
-{
-	this->isAuthenticated = false;
-	this->password = "";
-	this->nickname = "";
-
-	// Stockage du descripteur de fichier et du nom d'hôte
-	this->fd = fd;
-	this->hostname = hostname;
-}
+Client::Client(Server& server, int fd, std::string hostname) : nickname(""), username(""), fullname(""), password(""), fd(fd), isAuthenticated(false), line(""), server(server), hostname(hostname){}
 
 Client::~Client()
 {
