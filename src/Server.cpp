@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#include "Errors.hpp"
 #include "Reply.hpp"
 #include "Commands/Nick.hpp"
 #include "Commands/User.hpp"
@@ -41,14 +40,14 @@ Server::Server(const std::string &port, const std::string &password) : port(port
 	// Résolution de l'adresse locale pour obtenir les informations nécessaires à la création du socket
 	int status = getaddrinfo(NULL, port.c_str(), &hints, &result);
 	if (status != 0)
-		throw std::runtime_error(std::string("getaddrinfo error and errno: "));
+		throw std::runtime_error("getaddrinfo failed: " + std::string(gai_strerror(status)));
 
 	// Création du socket pour écouter sur le port
 	fd = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 	if (fd == -1)
 	{
 		freeaddrinfo(result); // Libération des informations en cas d'erreur
-		throw std::runtime_error(std::string("socket error and errno: "));
+		throw std::runtime_error("socket creation failed: " + std::string(strerror(errno)));
 	}
 
 	// Récupération du nom d'hôte de la machine pour affichage
@@ -64,14 +63,14 @@ Server::Server(const std::string &port, const std::string &password) : port(port
 	if (bind(fd, result->ai_addr, result->ai_addrlen) == -1)
 	{
 		freeaddrinfo(result); // Libération des informations en cas d'erreur
-		throw std::runtime_error(std::string("bind error and errno: "));
+		throw std::runtime_error("bind failed: " + std::string(strerror(errno)));
 	}
 
 	freeaddrinfo(result); // Libération des informations après liaison réussie
 
 	// Mise en écoute du socket pour accepter les connexions entrantes
 	if (listen(fd, 10) == -1)
-		throw std::runtime_error(std::string("listen error and errno: "));
+		throw std::runtime_error("listen failed: " + std::string(strerror(errno)));
 }
 
 // Destructeur du serveur qui ferme le socket
@@ -103,7 +102,7 @@ void Server::start()
 	{
 		// Utilisation de `poll` pour surveiller les événements sur les descripteurs de fichiers
 		if (poll(fds, clients_number + 1, 5000) == -1)
-			throw std::runtime_error("poll error");
+            throw std::runtime_error("poll error: " + std::string(strerror(errno)));
 
 		// Gestion des nouvelles connexions
 		if (fds[0].revents & POLLIN)
@@ -112,15 +111,19 @@ void Server::start()
 			socklen_t client_addr_size = sizeof(client_addr);
 			int client_fd = accept(fd, (struct sockaddr*)&client_addr, &client_addr_size); // Acceptation de la connexion
 			if (client_fd == -1)
-				throw std::runtime_error("accept error");
+                throw std::runtime_error("accept error: " + std::string(strerror(errno)));
 
 			// Récupération du nom d'hôte du client
 			struct hostent *host;
 			struct sockaddr_in* in_addr = (struct sockaddr_in*)&client_addr;
 			host = gethostbyaddr(&(in_addr->sin_addr), sizeof(in_addr->sin_addr), AF_INET);
+			host = gethostbyaddr(&(in_addr->sin_addr), sizeof(in_addr->sin_addr), AF_INET);
+			if (!host)
+                throw std::runtime_error("hostname resolution error: " + std::string(strerror(errno)));
 
 			// Mise en mode non-bloquant du socket client
-			fcntl(client_fd, F_SETFL, O_NONBLOCK);
+			if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
+                throw std::runtime_error("fcntl error: " + std::string(strerror(errno)));
 			clients_number++;
 			fds[clients_number].fd = client_fd;
 			fds[clients_number].events = POLLIN;
@@ -134,54 +137,51 @@ void Server::start()
 		// Gestion des événements des clients connectés
 		for (int i = clients_number; i >= 1; i--)
 		{
-			try
+			if (fds[i].revents & POLLIN) // Si un client a envoyé des données
 			{
-				if (fds[i].revents & POLLIN) // Si un client a envoyé des données
+				// Lecture de la commande envoyée
+				std::string command = clients[i - 1]->readNextPacket();
+
+				// Si le client se déconnecte volontairement
+				if (command == "QUIT")
 				{
-					// Lecture de la commande envoyée
-					std::string command = clients[i - 1]->readNextPacket();
+					clients[i - 1]->sendMessage("[" + clients[i - 1]->getFullIdentifier() + "] : " + command, "console");
+					// Informer la console que le client a quitté
+            		//std::cout << "Client " << clients[i - 1]->getNickname() << " has quit." << std::endl;
 
-					// Si le client se déconnecte volontairement
-					if (command == "QUIT")
-					{
-						//std::cerr << "Client issued QUIT: " << clients[i - 1]->getNickname() << std::endl;
-						clients[i - 1]->sendBack("ERROR :Closing Link: " + clients[i - 1]->getNickname() + " (Client quit)");
+					// Envoyer un message de fermeture au client
+					clients[i - 1]->sendBack("ERROR :Closing Link: " + clients[i - 1]->getNickname() + " (Client quit)", "client");
 
-						// Enlever le client du serveur
-						removeDisconnectedClient(fds, i, clients_number);
-						clients_number--;
-						continue;
-					}
-
-					// Gestion des autres commandes du client
-					handleCommand(command, clients[i - 1]);
-				}
-
-				// Gestion de la déconnexion client
-				if (fds[i].revents & POLLHUP)
-				{
-					//std::cerr << "Client disconnected (POLLHUP): " << clients[i - 1]->getNickname() << std::endl;
+					// Enlever le client du serveur
 					removeDisconnectedClient(fds, i, clients_number);
 					clients_number--;
+					continue;
 				}
 
-				// Gestion des erreurs client
-				else if (fds[i].revents & POLLERR)
-				{
-					//std::cerr << "Client error (POLLERR): " << clients[i - 1]->getNickname() << std::endl;
-
-					//int error = 0;
-					//socklen_t errlen = sizeof(error);
-					//getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen);
-					//std::cout << "Error: " << error << std::endl;
-
-					removeDisconnectedClient(fds, i, clients_number);
-					clients_number--;
-				}
+				// Gestion des autres commandes du client
+				handleCommand(command, clients[i - 1]);
 			}
-			catch (ReadError& exception)
+
+			// Gestion de la déconnexion client
+			if (fds[i].revents & POLLHUP)
 			{
-				std::cerr << "ReadError: Client disconnected unexpectedly: " << exception.getClient().getNickname() << std::endl;
+        		std::cout << "Client " << clients[i - 1]->getNickname() << " disconnected (POLLHUP)." << std::endl;
+				removeDisconnectedClient(fds, i, clients_number);
+				clients_number--;
+			}
+
+			// Gestion des erreurs client
+			else if (fds[i].revents & POLLERR)
+			{
+        		std::cerr << "Client " << clients[i - 1]->getNickname() << " encountered an error (POLLERR)." << std::endl;
+
+				// Récupérer plus d'infos sur l'erreur
+				
+				int error = 0;
+				socklen_t errlen = sizeof(error);
+				if(getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen))
+            		std::cerr << "Socket error: " << strerror(error) << std::endl;
+				
 				removeDisconnectedClient(fds, i, clients_number);
 				clients_number--;
 			}
@@ -191,6 +191,12 @@ void Server::start()
 
 void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int clients_number)
 {
+	if (start_index <= 0 || start_index > clients_number)
+	{
+		std::cerr << "Error: Invalid client index for disconnection." << std::endl;
+		return;
+	}
+
 	Client* disconnectedClient = clients[start_index - 1];
 
 	// Suppression du client de tous les canaux dont il est membre
@@ -212,6 +218,7 @@ void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int 
 	// Suppression du client de la mémoire et de la liste des clients
 	delete clients[start_index - 1];
 	clients.erase(clients.begin() + (start_index - 1));
+	std::cout << "Client successfully removed." << std::endl;
 }
 
 void Server::handleCommand(std::string command, Client* creator)
@@ -221,7 +228,7 @@ void Server::handleCommand(std::string command, Client* creator)
 	if (command.empty())
 		return ;
 	std::vector<std::string> command_parts = parseCommand(command);
-
+	
 	// Traitement de certaines commandes sensibles (masquage de mots de passe)
 	if (command_parts[0] == "PASS")
 	{
@@ -251,7 +258,7 @@ void Server::handleCommand(std::string command, Client* creator)
 			command.replace(passPos, command_parts[3].length(), std::string(command_parts[3].length(), '*'));
 		}
 	}
-	
+
 	// Envoi de la commande dans la console pour affichage
 	creator->sendMessage("[" + creator->getFullIdentifier() + "] : " + command, "console");
 
@@ -301,7 +308,7 @@ void Server::handleCommand(std::string command, Client* creator)
 }
 
 // Fonction pour analyser la commande et la diviser en plusieurs parties
-std::vector<std::string> Server::parseCommand(std::string &command)
+std::vector<std::string> Server::parseCommand(std::string command)
 {
 	std::string::size_type space_pos;
 	std::string command_part;

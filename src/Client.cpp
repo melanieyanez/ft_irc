@@ -1,6 +1,5 @@
 #include "Client.hpp"
 #include "Server.hpp"
-#include "Errors.hpp"
 
 #include <unistd.h>
 #include <iostream>
@@ -9,9 +8,15 @@ Client::Client(Server& server, int fd, const std::string &hostname) : nickname("
 
 Client::~Client()
 {
-	std::cout << "Client<" << this << ">::~Client: " << fd << std::endl;
-	if (close(fd) < 0) // Fermeture du descripteur de fichier
-		std::cout << "Client<" << this << ">::~Client: closed failed " << errno << std::endl;
+	// Vérification si le descripteur de fichier est valide
+	if (fd >= 0)
+	{
+		// Fermeture du descripteur de fichier et vérification des erreurs
+		if (close(fd) < 0)
+			std::cerr << "Failed to close connection for client: " << this->getNickname() << " (fd: " << fd << "), error: " << strerror(errno) << std::endl;
+		else
+			std::cout << "Connection closed successfully for client: " << this->getNickname() << std::endl;
+	}
 }
 
 std::string Client::getNickname() const
@@ -97,10 +102,10 @@ std::string Client::readNextPacket()
 		{
 			if (errno == EAGAIN)
 				break; // Pas d'erreur, mais pas encore de données disponibles
-			throw ReadError(errno, *this); // En cas d'erreur sérieuse de lecture
+			throw std::runtime_error("failed to read from client: " + this->getNickname() + ": " + std::string(strerror(errno))); // En cas d'erreur sérieuse de lecture
 		}
 		if (read_length == 0) // Si le client a fermé la connexion
-			throw ReadError(-1, *this); // Le client est déconnecté
+			throw std::runtime_error("Client " + this->getNickname() + " disconnected"); // Le client est déconnecté
 		this->line.append(std::string(buffer, read_length)); // Ajout des données lues au buffer interne
 	}
 

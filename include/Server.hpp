@@ -34,7 +34,7 @@ class Server
 		std::string 				getHostname() const;
 
 	protected:
-		std::vector<std::string> 	parseCommand(std::string &command);
+		std::vector<std::string> 	parseCommand(std::string command);
 		void 						removeDisconnectedClient(struct pollfd fds[], int start_index, int clients_number);
 
 	private:

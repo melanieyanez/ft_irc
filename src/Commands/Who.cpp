@@ -25,6 +25,9 @@ void Commands::Who::execute(Client& client, Server& server)
 {
 	Reply reply;
 
+	// Log dans la console pour indiquer que la commande HELP est en cours d'exécution pour le client
+	client.sendMessage("Executing HELP command for client: " + client.getNickname(), "console");
+
 	// Gestion des erreurs détectées lors de la construction de la commande
 	if (this->error)
 	{

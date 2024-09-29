@@ -39,7 +39,8 @@ int main(int argc, char **argv)
 	catch(const std::exception& e)
 	{
 		// Capture des exceptions qui pourraient être levées pendant l'exécution du programme
-		std::cerr << "main(): caught: " << e.what() << '\n';
+		//std::cerr << "main(): caught: " << e.what() << '\n';
+		std::cerr << "Error in server execution: " << e.what() << std::endl;
 		// Nettoyage de l'objet Server en cas d'exception
 		delete g_server;
 		return 1;
