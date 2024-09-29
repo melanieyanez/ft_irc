@@ -18,7 +18,7 @@ namespace Commands
 			std::string 	command;
 			std::string		generateLoginHelp() const;
 			std::string 	generateGeneralHelp() const;
-			std::string 	generateCommandHelp(const std::string &command) const;
+			std::string 	generateCommandHelp(const std::string &command, const Client &client) const;
 	};
 };
 

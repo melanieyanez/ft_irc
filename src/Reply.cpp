@@ -339,13 +339,11 @@ void Reply::errChanOpPrivsNeeded(const Channel &channel, const Client &client, c
 
 void Reply::rplHelpStart(const Client &client, const std::string &command) const
 {
-	client.sendMessage("Start of help message for command: " + command, "console");
 	client.sendBack("704 " + client.getNickname() + " " + command + " :Start of help message", "client");
 }
 
 void Reply::rplEndOfHelp(const Client &client, const std::string &command) const
 {
-	client.sendMessage("End of help message for command: " + command, "console");
 	client.sendBack("705 " + client.getNickname() + " " + command + " :End of help message", "client");
 }
 
