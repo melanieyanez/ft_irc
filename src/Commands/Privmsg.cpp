@@ -14,8 +14,6 @@ Commands::Privmsg::Privmsg(const std::vector<std::string> &command_parts) : mess
 		return;
 	}
 
-	bool messageStarted = false;
-
 	// Extraction des destinataires et du message
 	std::stringstream recipientStream(command_parts[1]);
 	std::string recipient;
@@ -24,26 +22,39 @@ Commands::Privmsg::Privmsg(const std::vector<std::string> &command_parts) : mess
 	while (std::getline(recipientStream, recipient, ','))
 		this->recipients.push_back(recipient);
 
-	// Capture du message à envoyer
-	for (size_t i = 2; i < command_parts.size(); ++i)
+	// Message est un seul mot
+	if (command_parts.size() == 3)
 	{
-		// Si le message commence avec ':', commencer à le capturer
-		if (command_parts[i][0] == ':' && !messageStarted)
-		{
-			this->message = command_parts[i].substr(1);
-			messageStarted = true;
-		}
-		// Si le message a déjà commencé, ajouter les parties suivantes
-		else if (messageStarted)
-			this->message += " " + command_parts[i];
-		// Si le message ne commence pas avec ":"
+		// Si le message commence par ':', on le supprime
+		if (command_parts[2][0] == ':')
+			this->message = command_parts[2].substr(1);
 		else
+			this->message = command_parts[2];
+	}
+	else
+	{
+		bool messageStarted = false;
+		// Capture du message à envoyer
+		for (size_t i = 2; i < command_parts.size(); ++i)
 		{
-			this->error = true;
-			this->errorCode = 461;
+			// Si le message commence avec ':', commencer à le capturer
+			if (command_parts[i][0] == ':' && !messageStarted)
+			{
+				this->message = command_parts[i].substr(1);
+				messageStarted = true;
+			}
+			// Si le message a déjà commencé, ajouter les parties suivantes
+			else if (messageStarted)
+				this->message += " " + command_parts[i];
+			// Si le message ne commence pas avec ":"
+			else
+			{
+				this->error = true;
+				this->errorCode = 461;
+				return;
+			}
 		}
 	}
-
 }
 
 void Commands::Privmsg::execute(Client& client, Server& server)

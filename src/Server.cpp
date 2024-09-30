@@ -225,7 +225,7 @@ void Server::handleCommand(std::string command, Client* creator)
 {
 	Reply reply;
 
-	if (command.empty())
+	if (command.empty() || command == "QUIT")
 		return ;
 	std::vector<std::string> command_parts = parseCommand(command);
 	
