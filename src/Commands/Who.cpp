@@ -58,8 +58,9 @@ void Commands::Who::listConnectedUsers(Server &server, Client &client) const
 		Client* connectedClient = *it;
 		// Format de la réponse pour chaque utilisateur connecté
 		if (connectedClient != NULL)
-			reply.sendReply(352, client, connectedClient, NULL, "WHO", "server");
+			reply.sendReply(352, client, connectedClient, NULL, "WHO");
 	}
+
 	// Message de fin de la commande /WHO
 	reply.sendReply(315, client, NULL, NULL, "WHO");
 }
@@ -89,18 +90,17 @@ void Commands::Who::listUsersInChannel(Server &server, Client &client, const std
 			Client* channelClient = *it;
 			// Format de la réponse pour chaque membre du canal
 			if (channelClient != NULL)
-			{
-				reply.sendReply(352, client, channelClient, channel, "WHO", "channel");
-			}
+				reply.sendReply(352, client, channelClient, channel, "WHO");
 		}
-		// Message de fin de la commande /WHO pour ce canal
-		reply.sendReply(315, client, NULL, NULL, "WHO", channelName);
 	}
 	else
 	{
 		// Si le canal n'existe pas
 		reply.sendReply(403, client, NULL, NULL, "WHO", channelName);
+		return;
 	}
+	// Message de fin de la commande /WHO
+	reply.sendReply(315, client, NULL, NULL, "WHO");
 }
 			
 void Commands::Who::listSpecificUser(Server &server, Client &client, const std::string &nickName) const
@@ -112,9 +112,25 @@ void Commands::Who::listSpecificUser(Server &server, Client &client, const std::
 
 	if (specificClient)
 	{
-		client.sendMessage("WHO reply for user: " + specificClient->getNickname() + " - Client: " + client.getNickname(), "console");
-		// Format de la réponse pour l'utilisateur spécifique
-		reply.sendReply(352, client, specificClient, NULL, "WHO", "user");
+		// Récupérer tous les canaux depuis le serveur
+		std::vector<Channel*> channels = server.getChannels();
+		
+		bool foundInChannel = false;
+
+		// Parcourir tous les channels pour voir si l'utilisateur fait partie d'un channel
+		for (std::vector<Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
+		{
+			Channel* channel = *it;
+			if (channel->isMember(*specificClient))
+			{
+				reply.sendReply(352, client, specificClient, *it, "WHO");
+				foundInChannel = true;
+			}
+		}
+
+		// Si l'utilisateur n'était pas dans un channel, on renvoie une réponse générique avec "*"
+		if (!foundInChannel)
+			reply.sendReply(352, client, specificClient, NULL, "WHO");
 	}
 	else
 	{
@@ -122,6 +138,6 @@ void Commands::Who::listSpecificUser(Server &server, Client &client, const std::
 		reply.sendReply(401, client, NULL, NULL, "WHO", nickName);
 		return;
 	}
-	// Message de fin de la commande /WHO pour cet utilisateur
+	// Message de fin de la commande /WHO
 	reply.sendReply(315, client, NULL, NULL, "WHO");
 }

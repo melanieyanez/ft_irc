@@ -37,7 +37,8 @@ void Reply::sendReply(const int &code, Client &client, Client *target, Channel *
 				rplInviting(client, *channel, *target);
 			break;
 		case 352:
-			rplWhoReply(*channel, client, *target, extra);
+			if (target)
+				rplWhoReply(channel, client, *target);
 			break;
 		case 353:
 			if (channel)
@@ -187,22 +188,10 @@ void Reply::rplInviting(const Client &client, const Channel &channel, const Clie
 	client.sendBack("341 " + client.getNickname() + " " + target.getNickname() + " :" + channel.getChannelName(), "client");
 }
 
-void Reply::rplWhoReply(const Channel &channel, const Client &client, const Client &target, const std::string &extra) const
+void Reply::rplWhoReply(Channel *channel, const Client &client, const Client &target) const
 {
- 	std::string response;
-	
-	if (extra == "channel")
-		response = "352 " + client.getNickname() + " " + channel.getChannelName() + " " + target.getNickname() + " :" + target.getFullname();
-	else if (extra == "user")
-		response = "352 " + client.getNickname() + " * " + target.getNickname() + " :" + target.getFullname();
-	else if (extra == "server")
-		response = "352 " + client.getNickname() + " * " + target.getNickname() + " :" + target.getFullname();
-	else
-	{
-		client.sendMessage("WHO reply error - Invalid parameters", "console");
-		return;
-	}
-	client.sendBack(response, "client");
+	client.sendMessage("Sending WHO reply for user: " + target.getNickname(), "console");
+	client.sendBack("352 " + client.getNickname() + " " + (channel ? channel->getChannelName() : "*") + " " + ((channel && channel->isOperator(target)) ? "@" : "") + target.getNickname() + " :" + target.getFullname(), "client");
 }
 
 void Reply::rplNamReply(const Client &client, const Channel &channel) const

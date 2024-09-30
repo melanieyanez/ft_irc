@@ -81,6 +81,13 @@ void Commands::Topic::setTopic(Client& client, Server&, Channel& channel)
 {
 	Reply reply;
 
+	// Vérification si l'utilisateur est membre du canal
+	if (!channel.isMember(client))
+	{
+		reply.sendReply(442, client, NULL, &channel, "TOPIC");
+		return;
+	}
+
 	// Vérification si le canal restreint la modification du topic et si l'utilisateur est opérateur
 	if (channel.isTopicRestricted() && !channel.isOperator(client))
 	{

@@ -24,7 +24,7 @@ class Reply
 		void rplTopic(const Client &client, const Channel &channel) const;
 		void rplTopicWhoTime(const Channel &channel, const Client &client) const;
 		void rplInviting(const Client &client, const Channel &channel, const Client &target) const;
-		void rplWhoReply(const Channel &channel, const Client &client, const Client &target, const std::string &command) const;
+		void rplWhoReply(Channel *channel, const Client &client, const Client &target) const;
 		void rplNamReply(const Client &client, const Channel &channel) const;
 		void rplEndOfNames(const Client &client, const Channel &channel) const;
 		void rplHelpStart(const Client &client, const std::string &command) const;
