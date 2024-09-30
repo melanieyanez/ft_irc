@@ -26,7 +26,7 @@
 #include <sstream>
 
 // Constructeur de la classe Server, initialisant le port et le mot de passe du serveur
-Server::Server(const std::string &port, const std::string &password) : port(port), password(password), fd(-1), channelName(""), hostname(""), stopRequested(false)
+Server::Server(const std::string &port, const std::string &password) : clients_number(0), port(port), password(password), fd(-1), channelName(""), hostname(""), stopRequested(false)
 {
 	// Préparation de l'initialisation du socket avec les informations sur l'adresse et le port
 	struct addrinfo hints;
@@ -88,7 +88,6 @@ void Server::stop()
 void Server::start()
 {
 	struct pollfd fds[1000]; // Tableau de pollfd pour surveiller jusqu'à 1000 descripteurs de fichier
-	int clients_number = 0;
 
 	// Configuration initiale : le descripteur fds[0] est réservé pour les connexions entrantes (socket principal)
 	fds[0].fd = this->fd;
@@ -124,9 +123,9 @@ void Server::start()
 			// Mise en mode non-bloquant du socket client
 			if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
                 throw std::runtime_error("fcntl error: " + std::string(strerror(errno)));
-			clients_number++;
-			fds[clients_number].fd = client_fd;
-			fds[clients_number].events = POLLIN;
+			this->clients_number++;
+			fds[this->clients_number].fd = client_fd;
+			fds[this->clients_number].events = POLLIN;
 
 			// Création d'un nouvel objet 'Client` pour le client connecté et ajout à la liste des clients
 			Client* client = new Client(*this, client_fd, host->h_name);
@@ -135,7 +134,7 @@ void Server::start()
 		}
 
 		// Gestion des événements des clients connectés
-		for (int i = clients_number; i >= 1; i--)
+		for (int i = this->clients_number; i >= 1; i--)
 		{
 			if (fds[i].revents & POLLIN) // Si un client a envoyé des données
 			{
@@ -153,8 +152,8 @@ void Server::start()
 					clients[i - 1]->sendBack("ERROR :Closing Link: " + clients[i - 1]->getNickname() + " (Client quit)", "client");
 
 					// Enlever le client du serveur
-					removeDisconnectedClient(fds, i, clients_number);
-					clients_number--;
+					removeDisconnectedClient(fds, i, this->clients_number);
+					this->clients_number--;
 					continue;
 				}
 
@@ -166,8 +165,8 @@ void Server::start()
 			if (fds[i].revents & POLLHUP)
 			{
         		std::cout << "Client " << clients[i - 1]->getNickname() << " disconnected (POLLHUP)." << std::endl;
-				removeDisconnectedClient(fds, i, clients_number);
-				clients_number--;
+				removeDisconnectedClient(fds, i, this->clients_number);
+				this->clients_number--;
 			}
 
 			// Gestion des erreurs client
@@ -182,8 +181,8 @@ void Server::start()
 				if(getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen))
             		std::cerr << "Socket error: " << strerror(error) << std::endl;
 				
-				removeDisconnectedClient(fds, i, clients_number);
-				clients_number--;
+				removeDisconnectedClient(fds, i, this->clients_number);
+				this->clients_number--;
 			}
 		}
 	}

@@ -26,7 +26,7 @@ void Commands::Who::execute(Client& client, Server& server)
 	Reply reply;
 
 	// Log dans la console pour indiquer que la commande HELP est en cours d'exécution pour le client
-	client.sendMessage("Executing HELP command for client: " + client.getNickname(), "console");
+	client.sendMessage("Executing WHO command for client: " + client.getNickname(), "console");
 
 	// Gestion des erreurs détectées lors de la construction de la commande
 	if (this->error)
@@ -73,6 +73,13 @@ void Commands::Who::listUsersInChannel(Server &server, Client &client, const std
 
 	if (channel)
 	{
+		// Vérifier si le canal est protégé par un mot de passe ou si il est invitation only
+		if ((channel->isInvitationOnly() || channel->isProtected()) && !channel->isMember(client))
+		{
+			reply.sendReply(442, client, NULL, channel, "WHO", channelName);
+			return;
+		}
+
 		// Récupérer les membres du canal
 		std::vector<Client*> members = channel->getMembers();
 		
@@ -113,6 +120,7 @@ void Commands::Who::listSpecificUser(Server &server, Client &client, const std::
 	{
 		// Si l'utilisateur n'existe pas
 		reply.sendReply(401, client, NULL, NULL, "WHO", nickName);
+		return;
 	}
 	// Message de fin de la commande /WHO pour cet utilisateur
 	reply.sendReply(315, client, NULL, NULL, "WHO");

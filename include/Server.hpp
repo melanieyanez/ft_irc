@@ -39,6 +39,7 @@ class Server
 
 	private:
 		std::vector<Client*> 		clients;
+		int							clients_number;
 		std::string 				port;
 		std::string 				password;
 		int 						fd;
