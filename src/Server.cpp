@@ -85,7 +85,6 @@ void Server::stop()
 	this->stopRequested = true;
 }
 
-// Fonction principale pour démarrer le serveur et gérer les connexions et les événements des clients
 void Server::start()
 {
 	struct pollfd fds[1000]; // Tableau de pollfd pour surveiller jusqu'à 1000 descripteurs de fichier
@@ -145,62 +144,73 @@ void Server::start()
 		// Gestion des événements des clients connectés
 		for (int i = this->clients_number; i >= 1; i--)
 		{
-			if (fds[i].revents & POLLIN) // Si un client a envoyé des données
+			try
 			{
-				// Lecture de la commande envoyée
-				std::string command = clients[i - 1]->readNextPacket();
-
-				// Si le client se déconnecte volontairement
-				if (command == "QUIT")
+				if (fds[i].revents & POLLIN) // Si un client a envoyé des données
 				{
-					clients[i - 1]->sendMessage("[" + clients[i - 1]->getFullIdentifier() + "] : " + command, "console");
-					clients[i - 1]->sendBack("ERROR :Closing Link: " + clients[i - 1]->getNickname() + " (Client quit)", "client");
+					// Lecture de la commande envoyée
+					std::string command = clients[i - 1]->readNextPacket();
 
-					// Enlever le client du serveur
+					// Si le client se déconnecte volontairement
+					if (command == "QUIT")
+					{
+						clients[i - 1]->sendMessage("[" + clients[i - 1]->getFullIdentifier() + "] : " + command, "console");
+						clients[i - 1]->sendBack("ERROR :Closing Link: " + clients[i - 1]->getNickname() + " (Client quit)", "client");
+
+						// Enlever le client du serveur
+						removeDisconnectedClient(fds, i, this->clients_number);
+						this->clients_number--;
+						continue;
+					}
+
+					// Gestion des autres commandes du client
+					handleCommand(command, clients[i - 1]);
+				}
+
+				// Gestion de la déconnexion client
+				if (fds[i].revents & POLLHUP)
+				{
+					std::cout << "Client " << clients[i - 1]->getNickname() << " disconnected (POLLHUP)." << std::endl;
 					removeDisconnectedClient(fds, i, this->clients_number);
 					this->clients_number--;
-					continue;
 				}
 
-				// Gestion des autres commandes du client
-				handleCommand(command, clients[i - 1]);
-			}
-
-			// Gestion de la déconnexion client
-			if (fds[i].revents & POLLHUP)
-			{
-				std::cout << "Client " << clients[i - 1]->getNickname() << " disconnected (POLLHUP)." << std::endl;
-				removeDisconnectedClient(fds, i, this->clients_number);
-				this->clients_number--;
-			}
-
-			// Gestion des erreurs client
-			else if (fds[i].revents & POLLERR)
-			{
-				std::cerr << "Client " << clients[i - 1]->getNickname() << " encountered an error (POLLERR)." << std::endl;
-
-				// Vérifie le code d'erreur pour ignorer les erreurs bénignes
-				int error = 0;
-				socklen_t errlen = sizeof(error);
-				if (getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
+				// Gestion des erreurs client
+				else if (fds[i].revents & POLLERR)
 				{
-					if (error == ECONNRESET || error == ETIMEDOUT || error == EPIPE)
+					std::cerr << "Client " << clients[i - 1]->getNickname() << " encountered an error (POLLERR)." << std::endl;
+
+					// Vérifie le code d'erreur pour ignorer les erreurs bénignes
+					int error = 0;
+					socklen_t errlen = sizeof(error);
+					if (getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
 					{
-						// Erreurs bénignes de connexion
-						std::cerr << "Connection error (benign): " << strerror(error) << std::endl;
+						if (error == ECONNRESET || error == ETIMEDOUT || error == EPIPE)
+						{
+							// Erreurs bénignes de connexion
+							std::cerr << "Connection error (benign): " << strerror(error) << std::endl;
+						}
+						else
+						{
+							std::cerr << "Socket error: " << strerror(error) << std::endl;
+						}
 					}
-					else
-					{
-						std::cerr << "Socket error: " << strerror(error) << std::endl;
-					}
+					// Suppression du client après une erreur
+					removeDisconnectedClient(fds, i, this->clients_number);
+					this->clients_number--;
 				}
-				// Suppression du client après une erreur
+			}
+			catch (std::exception& e)
+			{
+				// Gestion des exceptions lors de la lecture des données ou des événements client
+				std::cerr << "Error processing client: " << e.what() << std::endl;
 				removeDisconnectedClient(fds, i, this->clients_number);
 				this->clients_number--;
 			}
 		}
 	}
 }
+
 
 
 void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int clients_number)
