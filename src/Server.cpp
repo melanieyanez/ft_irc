@@ -24,6 +24,7 @@
 #include <sys/fcntl.h>
 #include <string>
 #include <sstream>
+#include <arpa/inet.h>
 
 // Constructeur de la classe Server, initialisant le port et le mot de passe du serveur
 Server::Server(const std::string &port, const std::string &password) : clients_number(0), port(port), password(password), fd(-1), channelName(""), hostname(""), stopRequested(false)
@@ -101,7 +102,7 @@ void Server::start()
 	{
 		// Utilisation de `poll` pour surveiller les événements sur les descripteurs de fichiers
 		if (poll(fds, clients_number + 1, 5000) == -1)
-            throw std::runtime_error("poll error: " + std::string(strerror(errno)));
+			throw std::runtime_error("poll error: " + std::string(strerror(errno)));
 
 		// Gestion des nouvelles connexions
 		if (fds[0].revents & POLLIN)
@@ -110,25 +111,33 @@ void Server::start()
 			socklen_t client_addr_size = sizeof(client_addr);
 			int client_fd = accept(fd, (struct sockaddr*)&client_addr, &client_addr_size); // Acceptation de la connexion
 			if (client_fd == -1)
-                throw std::runtime_error("accept error: " + std::string(strerror(errno)));
+				throw std::runtime_error("accept error: " + std::string(strerror(errno)));
 
 			// Récupération du nom d'hôte du client
 			struct hostent *host;
 			struct sockaddr_in* in_addr = (struct sockaddr_in*)&client_addr;
 			host = gethostbyaddr(&(in_addr->sin_addr), sizeof(in_addr->sin_addr), AF_INET);
-			host = gethostbyaddr(&(in_addr->sin_addr), sizeof(in_addr->sin_addr), AF_INET);
-			if (!host)
-                throw std::runtime_error("hostname resolution error: " + std::string(strerror(errno)));
-
+			
 			// Mise en mode non-bloquant du socket client
 			if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1)
-                throw std::runtime_error("fcntl error: " + std::string(strerror(errno)));
+				throw std::runtime_error("fcntl error: " + std::string(strerror(errno)));
 			this->clients_number++;
 			fds[this->clients_number].fd = client_fd;
 			fds[this->clients_number].events = POLLIN;
+			
+			// Déclaration de la variable client
+			Client* client = NULL;
+
+			// Si la résolution de l'IP fonctionne, on utilise le nom d'hôte
+			if (!host)
+			{
+				std::string client_ip = inet_ntoa(in_addr->sin_addr);
+				client = new Client(*this, client_fd, client_ip);
+			}
+			else
+				client = new Client(*this, client_fd, host->h_name);
 
 			// Création d'un nouvel objet 'Client` pour le client connecté et ajout à la liste des clients
-			Client* client = new Client(*this, client_fd, host->h_name);
 			clients.push_back(client);
 			continue;
 		}
@@ -145,10 +154,6 @@ void Server::start()
 				if (command == "QUIT")
 				{
 					clients[i - 1]->sendMessage("[" + clients[i - 1]->getFullIdentifier() + "] : " + command, "console");
-					// Informer la console que le client a quitté
-            		//std::cout << "Client " << clients[i - 1]->getNickname() << " has quit." << std::endl;
-
-					// Envoyer un message de fermeture au client
 					clients[i - 1]->sendBack("ERROR :Closing Link: " + clients[i - 1]->getNickname() + " (Client quit)", "client");
 
 					// Enlever le client du serveur
@@ -164,7 +169,7 @@ void Server::start()
 			// Gestion de la déconnexion client
 			if (fds[i].revents & POLLHUP)
 			{
-        		std::cout << "Client " << clients[i - 1]->getNickname() << " disconnected (POLLHUP)." << std::endl;
+				std::cout << "Client " << clients[i - 1]->getNickname() << " disconnected (POLLHUP)." << std::endl;
 				removeDisconnectedClient(fds, i, this->clients_number);
 				this->clients_number--;
 			}
@@ -172,21 +177,31 @@ void Server::start()
 			// Gestion des erreurs client
 			else if (fds[i].revents & POLLERR)
 			{
-        		std::cerr << "Client " << clients[i - 1]->getNickname() << " encountered an error (POLLERR)." << std::endl;
+				std::cerr << "Client " << clients[i - 1]->getNickname() << " encountered an error (POLLERR)." << std::endl;
 
-				// Récupérer plus d'infos sur l'erreur
-				
+				// Vérifie le code d'erreur pour ignorer les erreurs bénignes
 				int error = 0;
 				socklen_t errlen = sizeof(error);
-				if(getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen))
-            		std::cerr << "Socket error: " << strerror(error) << std::endl;
-				
+				if (getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
+				{
+					if (error == ECONNRESET || error == ETIMEDOUT || error == EPIPE)
+					{
+						// Erreurs bénignes de connexion
+						std::cerr << "Connection error (benign): " << strerror(error) << std::endl;
+					}
+					else
+					{
+						std::cerr << "Socket error: " << strerror(error) << std::endl;
+					}
+				}
+				// Suppression du client après une erreur
 				removeDisconnectedClient(fds, i, this->clients_number);
 				this->clients_number--;
 			}
 		}
 	}
 }
+
 
 void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int clients_number)
 {
@@ -198,16 +213,23 @@ void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int 
 
 	Client* disconnectedClient = clients[start_index - 1];
 
-	// Suppression du client de tous les canaux dont il est membre
+	// Notification aux canaux que le client quitte
 	for (std::vector<Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
 	{
 		Channel* channel = *it;
 		if (channel->isMember(*disconnectedClient))
 		{
+			// Envoi d'un message de départ (QUIT) à tous les membres du canal
+			std::string quitMessage = ":" + disconnectedClient->getFullIdentifier() + " QUIT :Client disconnected";
+			channel->sendMessage(quitMessage, disconnectedClient);
+
+			// Suppression du client du canal
 			channel->removeMember(*disconnectedClient);
+
 			std::cout << "Client " << disconnectedClient->getNickname() << " removed from channel " << channel->getChannelName() << std::endl;
 		}
 	}
+
 	// Réorganisation des descripteurs de fichiers
 	for (int move_index = start_index; move_index < clients_number; move_index++)
 	{
@@ -215,8 +237,9 @@ void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int 
 	}
 
 	// Suppression du client de la mémoire et de la liste des clients
-	delete clients[start_index - 1];
+	delete disconnectedClient;
 	clients.erase(clients.begin() + (start_index - 1));
+
 	std::cout << "Client successfully removed." << std::endl;
 }
 
@@ -265,7 +288,7 @@ void Server::handleCommand(std::string command, Client* creator)
 	std::transform(command_name.begin(), command_name.end(), command_name.begin(), toupper);
 
 	// Vérification si le client est authentifié pour exécuter certaines commandes
-	if (command_parts[0] != "HELP" && command_parts[0] != "PASS" && command_parts[0] != "NICK" && command_parts[0] != "USER" && !creator->getIsAuthenticated())
+	if (command_parts[0] != "HELP" && command_parts[0] != "PASS" && command_parts[0] != "NICK" && command_parts[0] != "USER" && command_parts[0] != "CAP" && !creator->getIsAuthenticated())
 	{
 		reply.sendReply(451, *creator, NULL, NULL, command_parts[0]);
 		return;
@@ -300,6 +323,8 @@ void Server::handleCommand(std::string command, Client* creator)
 		Commands::List(command_parts).execute(*creator, *this);
 	else if (command_name == "PART")
 		Commands::Part(command_parts).execute(*creator, *this);
+	else if (command_name == "CAP")
+		creator->sendBack("CAP * END");
 	else
 	{
 		reply.sendReply(999, *creator, NULL, NULL, command_name);
@@ -409,3 +434,4 @@ std::string Server::getHostname() const
 {
 	return hostname;
 }
+

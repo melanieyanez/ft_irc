@@ -2,10 +2,10 @@
 #include "Server.hpp"
 #include "Reply.hpp"
 
-Commands::Mode::Mode(const std::vector<std::string> &command_parts) : channelName(""), mode(""), extraParam("")
+Commands::Mode::Mode(const std::vector<std::string> &command_parts) : channelName(""), modeMap(), extraParam("")
 {
 	// Vérification de la syntaxe
-	if (command_parts.size() < 3)
+	if (command_parts.size() < 2)
 	{
 		this->error = true;
 		this->errorCode = 461;
@@ -13,7 +13,6 @@ Commands::Mode::Mode(const std::vector<std::string> &command_parts) : channelNam
 	}
 
 	this->channelName = command_parts[1];
-	this->mode = command_parts[2];
 
 	if (this->channelName[0] != '#')
 	{
@@ -22,34 +21,38 @@ Commands::Mode::Mode(const std::vector<std::string> &command_parts) : channelNam
 		return;
 	}
 
-	// Vérification du format du mode
-	if (this->mode.length() != 2 || (this->mode[0] != '+' && this->mode[0] != '-'))
-	{
-		this->error = true;
-		this->errorCode = 472;
-		return;
-	}
+	size_t paramIndex = 3; // Les paramètres après le mode
+	std::string modes = command_parts[2];
 
-	// Gestion des paramètres en fonction du mode
-	if (mode == "+o" || mode == "-o" || mode == "+l" || mode == "+k" || mode == "-k" )
+	// Parcourir la chaîne de modes deux caractères à la fois
+	for (size_t i = 0; i < modes.size(); i += 2)
 	{
-		if (command_parts.size() != 4)
+		std::string mode = modes.substr(i, 2);
+		std::string modeArgument = "";
+
+		// Vérification du format du mode
+		if (mode.length() != 2 || (mode[0] != '+' && mode[0] != '-'))
 		{
 			this->error = true;
-			this->errorCode = 461;
+			this->errorCode = 472;
 			return;
 		}
-		this->extraParam = command_parts[3];
-	}
 
-	else if (mode == "+i" || mode == "-i" || mode == "+t" || mode == "-t" || mode == "-l")
-	{
-		if (command_parts.size() != 3)
+		// Si le mode est +k, -k ou +l, il nécessite un argument
+		if (mode == "+k" || mode == "-k" || mode == "+l" || mode == "+o" || mode == "-o")
 		{
-			this->error = true;
-			this->errorCode = 461;
-			return;
+			if (paramIndex < command_parts.size())
+				modeArgument = command_parts[paramIndex++];
+			else
+			{
+				this->error = true;
+				this->errorCode = 461;
+				return;
+			}
 		}
+
+		// Stocker le mode et son argument dans la map
+		this->modeMap[mode] = modeArgument;
 	}
 }
 	
@@ -70,238 +73,193 @@ void Commands::Mode::execute(Client& client, Server& server)
 	// Recherche du channel spécifié par le client
 	Channel* channel = server.getChannel(this->channelName);
 
-	 if (!channel)
+	if (!channel)
 	{
 		reply.sendReply(403, client, NULL, NULL, "MODE", this->channelName);
 		return;
 	}
 
-	// Vérification si l'utilisateur est opérateur dans le channel.
-	if (!channel->isOperator(client))
+	if (this->modeMap.empty())
 	{
-		reply.sendReply(482, client, NULL, channel, "MODE");
+		// Récupère les modes actifs du canal
+		std::string currentModes = channel->getModes();
+		
+		// Envoie la réponse au client avec les modes actuels
+		client.sendBack(":" + server.getHostname() + " 324 " + client.getNickname() + " " + this->channelName + " " + currentModes);
+		client.sendMessage("Client " + client.getNickname() + " requested current modes for channel " + this->channelName + ": " + currentModes, "console");
 		return;
 	}
-
-	// ================== Ajout/suppression d'un utilisateur comme opérateur dans un channel (+o/-o)
-	if (mode == "+o")
+	else
 	{
-		// Recherche du client cible à promouvoir en opérateur
-		Client* target = server.getClientByNickname(extraParam);
-
-		// Vérification si le client cible existe
-		if (!target)
+		// Vérification si l'utilisateur est opérateur dans le channel.
+		if (!channel->isOperator(client))
 		{
-			reply.sendReply(401, client, NULL, channel, "MODE", extraParam);
+			reply.sendReply(482, client, NULL, channel, "MODE");
 			return;
 		}
-
-		// Vérification si l'utilisateur est déjà opérateur
-		if (channel->isOperator(*target))
-		{
-			client.sendBack(extraParam + " is already an operator on " + channelName, "client");
-			client.sendMessage("Client " + extraParam + " is already an operator on channel " + channelName, "console");
-			return;
-		}
-
-		// Ajout de l'utilisateur comme opérateur dans le channel
-		channel->addOperator(*target);
-
-		client.sendBack(":" + client.getFullIdentifier() + " MODE " + channelName + " +o " + extraParam, "client");
-		channel->sendMessage( ":" + client.getFullIdentifier() + " MODE " + channelName + " +o " + extraParam);
-		client.sendMessage("Success: Client " + target->getNickname() + " is now an operator on channel " + channelName, "console");
+		this->applyModes(client, server, *channel);
 	}
+}
 
-	else if (mode == "-o")
+void Commands::Mode::applyModes(Client &client, Server &server, Channel &channel)
+{
+	Reply reply;
+
+	// Parcours de chaque mode stocké dans la map (qui contient le mode et l'argument associé)
+	for (std::map<std::string, std::string>::iterator it = this->modeMap.begin(); it != this->modeMap.end(); ++it)
 	{
-		// Recherche du client cible à rétrograder
-		Client* target = server.getClientByNickname(extraParam);
-	
-		// Vérification si le client cible existe
-		if (!target)
-		{
-			reply.sendReply(401, client, NULL, channel, "MODE", extraParam);
-			return;
- 		}
+		std::string mode = it->first;
+		std::string argument = it->second;
 
-		// Vérification si l'utilisateur est opérateur
-		if (!channel->isOperator(*target))
+		// Vérification pour les modes qui nécessitent un argument
+		if ((mode == "+k" || mode == "-k" || mode == "+l" || mode == "-l") && argument.empty())
 		{
-			client.sendBack(extraParam + " is not an operator on " + channelName, "client");
-			client.sendMessage("Client " + extraParam + " is not an operator on channel " + channelName, "console");
-			return;
+			// Envoi d'une erreur si un argument est requis mais absent
+			reply.sendReply(461, client, NULL, &channel, "MODE", mode);
+			continue;
 		}
 
-		// Suppression de l'utilisateur en tant qu'opérateur du channel
-		channel->removeOperator(*target);
-
-		client.sendBack("MODE " + channelName + " -o " + extraParam, "client");
-		channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " -o " + extraParam);
-		client.sendMessage("Success: Client " + target->getNickname() + " is no longer an operator on channel " + channelName, "console");
-	}
-
-	// ================== Définir/supprimer la limite d’utilisateurs pour le canal (+l / -l)
-	else if (mode == "+l")
-	{
-		try
+		// ================== Ajout/suppression d'un utilisateur comme opérateur dans un channel (+o/-o)
+		if (mode == "+o")
 		{
-			// Conversion du paramètre extra en entier
-			int limit = std::stoi(extraParam);
+			Client* target = server.getClientByNickname(argument);
+			if (!target)
+			{
+				reply.sendReply(401, client, NULL, &channel, "MODE", argument);
+				continue;
+			}
+
+			if (channel.isOperator(*target))
+			{
+				client.sendBack(argument + " is already an operator on " + channel.getChannelName(), "client");
+				continue;
+			}
+
+			channel.addOperator(*target);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +o " + argument, "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +o " + argument);
+		}
+		else if (mode == "-o")
+		{
+			Client* target = server.getClientByNickname(argument);
+			if (!target)
+			{
+				reply.sendReply(401, client, NULL, &channel, "MODE", argument);
+				continue;
+			}
+
+			if (!channel.isOperator(*target))
+			{
+				client.sendBack(argument + " is not an operator on " + channel.getChannelName(), "client");
+				continue;
+			}
+
+			channel.removeOperator(*target);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -o " + argument, "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -o " + argument);
+		}
+
+		// ================== Définir/supprimer la limite d’utilisateurs pour le canal (+l / -l)
+		else if (mode == "+l")
+		{
+			int limit = atoi(argument.c_str());
 			if (limit <= 0)
 			{
 				client.sendBack("Invalid limit: Limit must be a positive integer", "client");
-				client.sendMessage("Client " + client.getNickname() + " attempted to set an invalid limit on channel " + channelName, "console");
-				return;
+				continue;
 			}
 
-			// Si une limite est déjà définie, log du changement dans la console
-			if (channel->getLimits() > 0)
-				client.sendMessage("Success: Channel " + channelName + " limit modified to " + extraParam, "console");
-			// Sinon, log que la limite a été définie pour la première fois
-			else
-				client.sendMessage("Success: Channel " + channelName + " limit set to " + extraParam, "console");
-	   		
-			// Mise à jour de la limite sur le channel
-			channel->setLimits(limit);
-			client.sendBack("MODE " + channelName + " +l " + extraParam, "client");
-			channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " +l " + extraParam);
+			channel.setLimits(limit);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +l " + argument, "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +l " + argument);
 		}
-		catch (const std::invalid_argument& e)
+		else if (mode == "-l")
 		{
-			// Gestion d'une limite non-numérique
-			client.sendBack("Invalid limit: Non-numeric input provided", "client");
-			client.sendMessage("Client " + client.getNickname() + " provided a non-numeric limit for channel " + channelName, "console");
+			channel.setLimits(-1);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -l", "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -l");
 		}
-		catch (const std::out_of_range& e)
+
+		// ================== Définir/supprimer le mot de passe pour le canal (+k / -k)
+		else if (mode == "+k")
 		{
-			// Gestion d'une limite trop élevée
-			client.sendBack("Invalid limit: Number out of range", "client");
-			client.sendMessage("Error: Client " + client.getNickname() + " provided a limit out of range for channel " + channelName, "console");
+			if (channel.isProtected())
+			{
+				reply.sendReply(467, client, NULL, &channel, "MODE");  // 467 : ERR_KEYSET
+				continue;
+			}
+
+			channel.setPassword(argument);
+			channel.setProtected(true);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +k " + argument, "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +k " + argument);
 		}
-	}
-	
-	else if (mode == "-l")
-	{
-		//Vérification si le channel a une limite
-		if (channel->getLimits() == -1)
+		else if (mode == "-k")
 		{
-			client.sendMessage("No limit is currently set for channel " + channelName, "client");
-			client.sendMessage("Channel " + channelName + " has no limit set", "console");
+			if (!channel.isCorrectKey(argument))
+			{
+				reply.sendReply(464, client, NULL, &channel, "MODE", "Incorrect password");
+				continue;
+			}
+
+			channel.setPassword("");
+			channel.setProtected(false);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -k", "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -k");
+		}
+
+		// ================== Définir/supprimer le canal sur invitation uniquement (+i/-i)
+		else if (mode == "+i")
+		{
+			if (channel.isInvitationOnly())
+			{
+				client.sendBack("Mode +i is already applied", "client");
+				continue;
+			}
+
+			channel.setInvitationOnly(true);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +i", "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +i");
+		}
+		else if (mode == "-i")
+		{
+			if (!channel.isInvitationOnly())
+			{
+				client.sendBack("Mode -i is already applied", "client");
+				continue;
+			}
+
+			channel.setInvitationOnly(false);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -i", "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -i");
+		}
+
+		// ================== Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs (+t/-t)
+		else if (mode == "+t")
+		{
+			if (channel.isTopicRestricted())
+			{
+				client.sendBack("Mode +t is already applied", "client");
+				continue;
+			}
+
+			channel.setTopicRestricted(true);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +t", "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " +t");
+		}
+		else if (mode == "-t")
+		{
+			if (!channel.isTopicRestricted())
+			{
+				client.sendBack("Mode -t is already applied", "client");
+				continue;
+			}
+
+			channel.setTopicRestricted(false);
+			client.sendBack(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -t", "client");
+			channel.sendMessage(":" + client.getFullIdentifier() + " MODE " + channel.getChannelName() + " -t");
 		}
 		else
-		{
-			// Retrait de la limite
-			channel->setLimits(-1);
-			client.sendBack("MODE " + channelName + " -l", "client");
-			channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " -l");
-			client.sendMessage("Success: Channel " + channelName + " limit removed", "console");
-		}
-	}
-
-	// ================== Définir/supprimer le mot de passe pour le canal (+k / -k)
-	else if (mode == "+k")
-	{
-		// Vérification si le canal a déjà un mot de passe défini
-		if (channel->isProtected())
-		{
-			reply.sendReply(467, client, NULL, channel, "MODE");
-			return;
-		}
-		
-		// Définition du mot de passe pour le canal
-		channel->setPassword(extraParam);
-		channel->setProtected(true);
-		client.sendBack("MODE " + channelName + " +k " + extraParam, "client");
-		channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " +k " + extraParam);
-		client.sendMessage("Success: Password set for channel " + channelName, "console");
-	}
-	else if (mode == "-k")
-	{
-		//Vérification si le mot de passe fourni est correct
-		if (extraParam.empty() || !channel->isCorrectKey(extraParam))
-		{
-			reply.sendReply(464, client, NULL, channel, "MODE", "Incorrect password");
-			return;
-		}
-		
-		// Retrait du mot de passe du canal
-		channel->setPassword("");
-		channel->setProtected(false);
-		client.sendBack("MODE " + channelName + " -k", "client");
-		channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " -k");
-		client.sendMessage("Success: Password removed from channel " + channelName, "console");
-	}
-
-	// ================== Définir/supprimer le canal sur invitation uniquement (+i/-i)
-	else if (mode == "+i")
-	{
-		// Vérification si le mode est déjà appliqué
-		 if (channel->isInvitationOnly())
-		{
-			client.sendBack("Mode +i is already applied", "client");
-			client.sendMessage("Mode +i is already applied on channel " + channelName, "console");
-			return;
-		}
-
-		// Application du mode sur invitation
-		channel->setInvitationOnly(true);
-		client.sendBack("MODE " + channelName + " +i", "client");
-		channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " +i");
-		client.sendMessage("Success: Channel " + channelName + " is now invite-only", "console");
-	}
-	else if (mode == "-i")
-	{
-		// Vérification si le mode est déjà appliqué
-		if (!channel->isInvitationOnly())
-		{
-			client.sendBack("Mode -i is already applied", "client");
-			client.sendMessage("Mode -i is already applied on channel " + channelName, "console");
-			return;
-		}
-
-		// Retrait du mode sur invitation
-		channel->setInvitationOnly(false);
-		client.sendBack("MODE " + channelName + " -i", "client");
-		channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " -i");
-		client.sendMessage("Success: Channel " + channelName + " is no longer invite-only", "console");
-	}
-
-	// ================== Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs (+t/-t)
-	else if (mode == "+t")
-	{
-		// Vérification si le mode est déjà appliqué
-		if (channel->isTopicRestricted())
-		{
-			client.sendBack("Mode +t is already applied", "client");
-			client.sendMessage("Mode +t is already applied on channel " + channelName, "console");
-			return;
-		}
-
-		// Application de la restriction de sujet
-		channel->setTopicRestricted(true);
-		client.sendBack("MODE " + channelName + " +t", "client");
-		channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " +t");
-		client.sendMessage("Success: Topic restrictions enabled for channel " + channelName, "console");
-	}
-	else if (mode == "-t")
-	{
-		// Vérification si le mode est déjà appliqué
-		if (!channel->isTopicRestricted())
-		{
-			client.sendBack("Mode -t is already applied", "client");
-			client.sendMessage("Mode -t is already applied on channel " + channelName, "console");
-			return;
-		}
-
-		// Retrait de la restriction de sujet
-		channel->setTopicRestricted(false);
-		client.sendBack("MODE " + channelName + " -t", "client");
-		channel->sendMessage(":" + client.getFullIdentifier() + " MODE " + channelName + " -t");
-		client.sendMessage("Success: Topic restrictions disabled for channel " + channelName, "console");
-	}
-	// Si le mode demandé est invalide
-	else
-	{
-		reply.sendReply(472, client, NULL, channel, mode);
+			reply.sendReply(472, client, NULL, &channel, mode);
 	}
 }

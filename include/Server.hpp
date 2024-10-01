@@ -38,6 +38,7 @@ class Server
 		void 						removeDisconnectedClient(struct pollfd fds[], int start_index, int clients_number);
 
 	private:
+
 		std::vector<Client*> 		clients;
 		int							clients_number;
 		std::string 				port;

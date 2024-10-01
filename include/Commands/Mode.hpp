@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace Commands
 {
@@ -18,9 +19,12 @@ namespace Commands
 
 		protected:
 		
-			std::string 	channelName;
-			std::string 	mode;
-			std::string 	extraParam;
+			std::string 						channelName;
+			std::map<std::string, std::string> 	modeMap;
+			std::string 						extraParam;
+
+			void 								applyModes(Client &client, Server &server, Channel &channel);
+
 	};
 }
 

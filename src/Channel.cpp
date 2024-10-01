@@ -4,10 +4,13 @@
 
 Channel::Channel(std::string name, std::string key) : name(name), key(key), topic(""), memberLimit(0), invitationOnly(false), protection(false), topicRestricted(false), lastTopicSetter(""), lastTopicSetTime(std::time(0)){}
 
-void Channel::sendMessage(std::string message) const
+void Channel::sendMessage(std::string message, Client *sender) const
 {
 	for (std::vector<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
-		(*it)->sendMessage(message, "client");
+	{
+		if (sender == NULL || *it != sender)  
+			(*it)->sendMessage(message, "client");
+	}
 }
 
 void Channel::sendBack(std::string reply) const
@@ -69,6 +72,18 @@ std::string Channel::getMemberList() const
 		memberList.pop_back(); // Suppression de l'espace à la fin
 
 	return memberList;
+}
+
+std::string Channel::getModes() const
+{
+	std::string modes = "+";
+
+	if (this->isInvitationOnly()) modes += "i";
+	if (this->isTopicRestricted()) modes += "t";
+	if (this->getLimits() > 0) modes += "l";
+	if (this->isProtected()) modes += "k";
+
+	return modes;
 }
 
 void Channel::removeMember(Client &client)

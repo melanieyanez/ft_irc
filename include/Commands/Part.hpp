@@ -16,6 +16,7 @@ namespace Commands
 		protected:
 
 			std::vector<std::string> 	channels;
+			std::string					partMessage;
 	};
 };
 

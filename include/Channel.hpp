@@ -18,7 +18,7 @@ class Channel
 		bool 					addMember(Client &client);
 		void 					removeMember(Client &client);
 
-		void 					sendMessage(std::string message) const;
+		void 					sendMessage(std::string message, Client *sender = NULL) const;
 		void 					sendBack(std::string reply) const;
 
 		void 					setTopic(const std::string &topic);
@@ -33,6 +33,7 @@ class Channel
 		std::string 			getChannelName() const;
 		std::vector<Client*> 	getMembers() const;
 		std::string 			getMemberList() const;
+		std::string				getModes() const;
 		std::string 			getTopic() const;
 		int 					getLimits() const;
 		unsigned int 			getMemberCount() const;

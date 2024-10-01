@@ -113,7 +113,7 @@ void Commands::Privmsg::execute(Client& client, Server& server)
 			}
 			
 			// Envoi du message à tous les membres du canal et log dans la console
-			channel->sendMessage(":" + client.getFullIdentifier() + " PRIVMSG " + recipient + " :" + message);
+			channel->sendMessage(":" + client.getFullIdentifier() + " PRIVMSG " + recipient + " :" + message, &client);
 			client.sendMessage("Success: Message sent to channel: " + recipient, "console");
 		}
 		// Sinon, c'est un client cible
