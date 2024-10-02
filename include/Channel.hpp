@@ -67,7 +67,7 @@ class Channel
 		bool					protection;
 		bool 					topicRestricted;
 		std::string 			lastTopicSetter;
-		std::time_t 			lastTopicSetTime;
+		time_t 					lastTopicSetTime;
 };
 
 #endif

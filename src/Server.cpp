@@ -85,6 +85,7 @@ void Server::stop()
 	this->stopRequested = true;
 }
 
+// Fonction principale pour démarrer le serveur et gérer les connexions et les événements des clients
 void Server::start()
 {
 	struct pollfd fds[1000]; // Tableau de pollfd pour surveiller jusqu'à 1000 descripteurs de fichier
@@ -146,7 +147,7 @@ void Server::start()
 		{
 			try
 			{
-				if (fds[i].revents & POLLIN) // Si un client a envoyé des données
+				if (fds[i].revents & POLLIN) // Si un client a envoyé des données - & (binaire) test le bit POLLIN si il es a un 
 				{
 					// Lecture de la commande envoyée
 					std::string command = clients[i - 1]->readNextPacket();
@@ -200,17 +201,14 @@ void Server::start()
 					this->clients_number--;
 				}
 			}
-			catch (std::exception& e)
+			catch (const std::exception& e)
 			{
-				// Gestion des exceptions lors de la lecture des données ou des événements client
-				std::cerr << "Error processing client: " << e.what() << std::endl;
 				removeDisconnectedClient(fds, i, this->clients_number);
 				this->clients_number--;
 			}
 		}
 	}
 }
-
 
 
 void Server::removeDisconnectedClient(struct pollfd fds[], int start_index, int clients_number)
@@ -335,6 +333,8 @@ void Server::handleCommand(std::string command, Client* creator)
 		Commands::Part(command_parts).execute(*creator, *this);
 	else if (command_name == "CAP")
 		creator->sendBack("CAP * END");
+	else if (command_name == "PONG")
+		creator->sendBack(command, "client");
 	else
 	{
 		reply.sendReply(999, *creator, NULL, NULL, command_name);
