@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Reply.hpp"
+#include "Commands/Topic.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -132,5 +133,12 @@ void Commands::Join::execute(Client& client, Server& server)
 		// Envoi de la liste des utilisateurs dans le canal
 		reply.sendReply(353, client, NULL, channel, "JOIN");
 		reply.sendReply(366, client, NULL, channel, "JOIN");
+
+		//Envoi du topic du canal
+		if (!channel->getTopic().empty())
+			reply.sendReply(332, client, NULL, channel, "JOIN");
+		else
+			reply.sendReply(331, client, NULL, channel, "JOIN");
+
 	}
 }

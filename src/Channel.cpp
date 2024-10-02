@@ -1,8 +1,9 @@
 #include "Channel.hpp"
 
 #include <ctime>
+#include <iostream>
 
-Channel::Channel(std::string name, std::string key) : name(name), key(key), topic(""), memberLimit(0), invitationOnly(false), protection(false), topicRestricted(false), lastTopicSetter(""), lastTopicSetTime(std::time(0)){}
+Channel::Channel(std::string name, std::string key) : name(name), key(key), topic(""), memberLimit(0), invitationOnly(false), protection(false), topicRestricted(false), lastTopicSetter(""), lastTopicSetTime(std::time(NULL)){}
 
 void Channel::sendMessage(std::string message, Client *sender) const
 {
@@ -229,11 +230,13 @@ void Channel::setLastTopicSetter(const std::string &nickName)
 
 std::string Channel::getLastTopicSetTime() const
 {
-	std::string timeStr = std::ctime(&this->lastTopicSetTime);
+	return std::to_string(std::time(0));
 	
-	if (!timeStr.empty() && timeStr.back() == '\n')
-		timeStr.pop_back();
-	return timeStr;
+	//std::string timeStr = std::ctime(&this->lastTopicSetTime);
+
+	//if (!timeStr.empty() && timeStr.back() == '\n')
+	//	timeStr.pop_back();
+	//return timeStr;
 }
 
 void Channel::setLastTopicSetTime()

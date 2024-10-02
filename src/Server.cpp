@@ -335,6 +335,8 @@ void Server::handleCommand(std::string command, Client* creator)
 		creator->sendBack("CAP * END");
 	else if (command_name == "PONG")
 		creator->sendBack(command, "client");
+	else if (command_name == "QUIT")
+		return;
 	else
 	{
 		reply.sendReply(999, *creator, NULL, NULL, command_name);

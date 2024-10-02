@@ -22,11 +22,11 @@ void Reply::sendReply(const int &code, Client &client, Client *target, Channel *
 			break;
 		case 331:
 			if (channel)
-				rplNoTopic(client, *channel);
+				rplNoTopic(client, *channel, command);
 			break;
 		case 332:
 			if (channel)
-				rplTopic(client, *channel);
+				rplTopic(client, *channel, command);
 			break;
 		case 333:
 			if (channel)
@@ -163,22 +163,28 @@ void Reply::rplListEnd(const Client &client) const
 	client.sendBack("323 " + client.getNickname() + " :End of /LIST", "client");
 }
 
-void Reply::rplNoTopic(const Client &client, const Channel &channel) const
+void Reply::rplNoTopic(const Client &client, const Channel &channel, const std::string &command) const
 {
 	client.sendMessage("No topic is set for channel: " + channel.getChannelName(), "console");
-	client.sendBack("331 " + client.getNickname() + " " + channel.getChannelName() + " :No topic is set", "client");
+	if (command == "JOIN")
+		client.sendBack("331 " + client.getNickname() + " " + channel.getChannelName() + " :No topic is set", "client");
+	if (command == "TOPIC")
+		channel.sendBack("331 " + client.getNickname() + " " + channel.getChannelName() + " :No topic is set");
 }
 
-void Reply::rplTopic(const Client &client, const Channel &channel) const
+void Reply::rplTopic(const Client &client, const Channel &channel, const std::string &command) const
 {
 	client.sendMessage("Displaying topic for channel: " + channel.getChannelName(), "console");
-	client.sendBack("332 " + client.getNickname() + " " + channel.getChannelName() + " :" + channel.getTopic(), "client");
+	if (command == "JOIN")
+		client.sendBack("332 " + client.getNickname() + " " + channel.getChannelName() + " :" + channel.getTopic(), "client");
+	if (command == "TOPIC")
+		channel.sendBack("332 " + client.getNickname() + " " + channel.getChannelName() + " :" + channel.getTopic());
 }
 
 void Reply::rplTopicWhoTime(const Channel &channel, const Client &client) const
 {
 	client.sendMessage("Topic last changed in channel: " + channel.getChannelName() + " by " + channel.getLastTopicSetter(), "console");
-	client.sendBack("333 " + client.getNickname() + " " + channel.getChannelName() + " " + channel.getLastTopicSetter() + " " + channel.getLastTopicSetTime(), "client");
+	channel.sendMessage("333 " + client.getNickname() + " " + channel.getChannelName() + " " + channel.getLastTopicSetter() + " " + channel.getLastTopicSetTime());
 }
 
 void Reply::rplInviting(const Client &client, const Channel &channel, const Client &target) const

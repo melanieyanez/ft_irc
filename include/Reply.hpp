@@ -20,8 +20,8 @@ class Reply
 		void rplEndOfWho(const Client &client) const;
 		void rplList(const Client &client, const Channel &channel) const;
 		void rplListEnd(const Client &client) const;
-		void rplNoTopic(const Client &client, const Channel &channel) const;
-		void rplTopic(const Client &client, const Channel &channel) const;
+		void rplNoTopic(const Client &client, const Channel &channel, const std::string &command) const;
+		void rplTopic(const Client &client, const Channel &channel, const std::string &command) const;
 		void rplTopicWhoTime(const Channel &channel, const Client &client) const;
 		void rplInviting(const Client &client, const Channel &channel, const Client &target) const;
 		void rplWhoReply(Channel *channel, const Client &client, const Client &target) const;

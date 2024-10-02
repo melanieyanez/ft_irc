@@ -101,8 +101,7 @@ void Commands::Topic::setTopic(Client& client, Server&, Channel& channel)
 	channel.setLastTopicSetTime();
 
 	// Envoi du nouveau topic à tous les membres du canal
-	channel.sendBack(":" + client.getFullIdentifier() + " TOPIC " + channel.getChannelName() + " :" + this->topic);
-	client.sendMessage("Success: Topic set for channel: " + channel.getChannelName(), "console");
+	reply.sendReply(332, client, NULL, &channel, "TOPIC");
 }
 
 void Commands::Topic::getCurrentTopic(Client& client, Server&, Channel& channel)
@@ -116,6 +115,6 @@ void Commands::Topic::getCurrentTopic(Client& client, Server&, Channel& channel)
 	{
 		// Envoi du topic actuel et des informations de modification au client
 		reply.sendReply(332, client, NULL, &channel, "TOPIC");
-		reply.sendReply(333, client, NULL, &channel, "TOPIC");
+  		reply.sendReply(333, client, NULL, &channel, channel.getLastTopicSetter(), channel.getLastTopicSetTime());
 	}
 }
